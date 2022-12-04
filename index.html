@@ -6,12 +6,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="css/style.css" rel="stylesheet" />
   </head>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: rgba(255, 255, 200);
+    }
+    .container{
+       position: relative;
+       width: 100%;
+       margin-top: 20px;
+       margin-left: 50px;
+    }
+    .content{
+      margin-top: 10px;
+      margin-left: 40px;
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+
   <body>
-    <h1>welcome to sc_blog</h1>
-    <ul>
-      <li>
-        <a href="rust_algorithm.html">rust_algorithm</a>
-      </li>
-    </ul>
+    <div class="container">
+      <h1>welcome to sc_blog</h1>
+      <ul class= content>
+        <li>
+          <a href="rust_algorithm.html">rust_algorithm</a>
+        </li>
+      </ul>
+    </div>
   </body>
 </html>
