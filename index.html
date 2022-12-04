@@ -14,24 +14,66 @@
     body {
     }
     .container{
-       position: relative;
-       width: 100%;
-       margin-top: 20px;
-       margin-left: 50px;
+       position:absolute;
+       left: 35%;
+       right: 35%;
+       width: 30%;
+       height: 100%;
+       border: 1px solid black;
+       margin-top: 1rem;
+       margin-bottom: 1rem;
+       text-align: center;
+       align-items: center;
+    }
+    .introduce{
+      margin-top: 1rem;
+      display:flex;
+      flex-direction: row;
+      object-fit: cover;
+    }
+    .introduce_text{
+      display:flex;
+      flex-direction: column;
+      text-align:center;
+      justify-content: center;
+      margin-right:20%;
+      margin-left: 20% ;
+      
     }
     .content{
-      margin-top: 10px;
-      margin-left: 40px;
-      display: flex;
-      flex-direction: column;
+      margin-top: 1rem;
+      margin-left: 20%;
+      text-align: left;
+    }
+    li{
+      margin-top: 10%;
+    }
+    .img_head{
+      width:30%;
+      height:30%;
+      margin-left: 10%;
+      border-radius: 50%;
+    }
+    a{
+      color:black;
     }
   </style>
 
   <body>
     <div class="container">
       <h1>welcome to sc_blog</h1>
+      <div class="introduce" >
+        <img src="public/image/ysh.jpg" alt="gidle 叶舒华" class="img_head"/>
+        <div class="introduce_text">
+         <B >this is my blog</B>
+         <B>my name is lsc</B>
+        </div>
+      </div>
       <ul class= content>
-        <li>
+        <li >
+          <a href="rust_algorithm.html">rust_algorithm</a>
+        </li>
+        <li cla>
           <a href="rust_algorithm.html">rust_algorithm</a>
         </li>
       </ul>
