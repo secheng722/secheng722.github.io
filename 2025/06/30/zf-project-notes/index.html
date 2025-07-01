@@ -6,12 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-    <meta name="description" content="项目 支付中台  对接微信支付宝接口  开发余额充值  开发退款  开发调账 seata处理  开发对账 后期采用redis set集合优化队长逻辑数据库连接过多   下单业务openfeign- 远程调用redissdiff 函数 取差集 对账定时任务 当天9点执行对账 拉取昨天的数据进行对账 充值充值 商品类型不用限制重复 需要限制重复下单 关单1234567graph TD    A[&amp;qu">
+    <meta name="description" content="项目 支付中台  对接微信支付宝接口  开发余额充值  开发退款  开发调账 seata处理  开发对账 后期采用redis set集合优化队长逻辑数据库连接过多   下单业务openfeign- 远程调用redissdiff 函数 取差集 对账定时任务 当天9点执行对账 拉取昨天的数据进行对账 充值充值 商品类型不用限制重复 需要限制重复下单 关单 graph TD      A[&quot;用户创建商品">
 <meta property="og:type" content="article">
 <meta property="og:title" content="zf Project Notes">
 <meta property="og:url" content="http://example.com/2025/06/30/zf-project-notes/index.html">
 <meta property="og:site_name" content="SC&#39;s Blog">
-<meta property="og:description" content="项目 支付中台  对接微信支付宝接口  开发余额充值  开发退款  开发调账 seata处理  开发对账 后期采用redis set集合优化队长逻辑数据库连接过多   下单业务openfeign- 远程调用redissdiff 函数 取差集 对账定时任务 当天9点执行对账 拉取昨天的数据进行对账 充值充值 商品类型不用限制重复 需要限制重复下单 关单1234567graph TD    A[&amp;qu">
+<meta property="og:description" content="项目 支付中台  对接微信支付宝接口  开发余额充值  开发退款  开发调账 seata处理  开发对账 后期采用redis set集合优化队长逻辑数据库连接过多   下单业务openfeign- 远程调用redissdiff 函数 取差集 对账定时任务 当天9点执行对账 拉取昨天的数据进行对账 充值充值 商品类型不用限制重复 需要限制重复下单 关单 graph TD      A[&quot;用户创建商品">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-06-30T03:23:30.000Z">
 <meta property="article:modified_time" content="2025-06-30T15:28:44.688Z">
@@ -169,9 +169,28 @@
 <h2 id="下单业务"><a href="#下单业务" class="headerlink" title="下单业务"></a>下单业务</h2><h2 id="openfeign-远程调用"><a href="#openfeign-远程调用" class="headerlink" title="openfeign- 远程调用"></a>openfeign- 远程调用</h2><h2 id="redis"><a href="#redis" class="headerlink" title="redis"></a>redis</h2><p>sdiff 函数 取差集</p>
 <h2 id="对账"><a href="#对账" class="headerlink" title="对账"></a>对账</h2><p>定时任务 当天9点执行对账 拉取昨天的数据进行对账</p>
 <h2 id="充值"><a href="#充值" class="headerlink" title="充值"></a>充值</h2><p>充值 商品类型不用限制重复 需要限制重复下单</p>
-<h2 id="关单"><a href="#关单" class="headerlink" title="关单"></a>关单</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">graph TD</span><br><span class="line"></span><br><span class="line">    A[&quot;用户创建商品订单&quot;] --&gt; |&quot;发送延迟消息，5分钟后消费&quot;| B[&quot;消费者通过商品订单号查询数据库支付状态,如果是已支付不进行操作&quot;]</span><br><span class="line"></span><br><span class="line">    B --&gt;|&quot;如果是未支付&quot;| C[&quot;通过商品订单号查询关联的支付订单号，一一查询支付渠道状态，如果都没有支付成功进行关单，并且把支付订单调用第三方关单接口进行关单，关闭不仅要关闭本地的，还需要关闭第三方的订单(WX,AliPay)&quot;]</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="关单"><a href="#关单" class="headerlink" title="关单"></a>关单</h2><pre class="mermaid">
+graph TD
 
-<h2 id="组合支付"><a href="#组合支付" class="headerlink" title="组合支付"></a>组合支付</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">graph TD</span><br><span class="line"></span><br><span class="line">    A(&quot;先扣除余额，在扣除渠道&quot;)</span><br><span class="line"></span><br><span class="line">    A_A(&quot;扣除完余额后，若没扫码，退余额麻烦。扫码了但是需要等回调&quot;)</span><br><span class="line"></span><br><span class="line">    B(&quot;在渠道支付成功后，更新余额&quot;) </span><br><span class="line"></span><br><span class="line">    B_B(&quot;扫码了但是需要等回调，这时还有余额，用户又下单，抵扣余额，渠道再次支付，扣除失败 但是对渠道就不好处理了&quot;)</span><br><span class="line"></span><br><span class="line">    A --&gt; A_A</span><br><span class="line"></span><br><span class="line">    B --&gt; B_B</span><br><span class="line"></span><br><span class="line">    C(&quot;冻结余额，扫码后再解冻并扣除余额&quot;)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+    A["用户创建商品订单"] --> |"发送延迟消息，5分钟后消费"| B["消费者通过商品订单号查询数据库支付状态,如果是已支付不进行操作"]
+
+    B -->|"如果是未支付"| C["通过商品订单号查询关联的支付订单号，一一查询支付渠道状态，如果都没有支付成功进行关单，并且把支付订单调用第三方关单接口进行关单，关闭不仅要关闭本地的，还需要关闭第三方的订单(WX,AliPay)"]</pre>
+
+<h2 id="组合支付"><a href="#组合支付" class="headerlink" title="组合支付"></a>组合支付</h2><pre class="mermaid">graph TD
+
+    A("先扣除余额，在扣除渠道")
+
+    A_A("扣除完余额后，若没扫码，退余额麻烦。扫码了但是需要等回调")
+
+    B("在渠道支付成功后，更新余额") 
+
+    B_B("扫码了但是需要等回调，这时还有余额，用户又下单，抵扣余额，渠道再次支付，扣除失败 但是对渠道就不好处理了")
+
+    A --> A_A
+
+    B --> B_B
+
+    C("冻结余额，扫码后再解冻并扣除余额")</pre>
 
 <h2 id="重复下单"><a href="#重复下单" class="headerlink" title="重复下单"></a>重复下单</h2><p>还有事物@Transactional(timeout &#x3D; 2, isolation &#x3D; Isolation.READ_COMMITTED)</p>
 <p>注意：锁外查询一次 锁内要再次查询</p>
@@ -194,10 +213,34 @@
 <li>匹配则删除锁：如果匹配，执行 redis.call(‘del’, KEYS[1]) 删除锁</li>
 <li>不匹配返回0：如果不匹配，返回 0 表示释放失败</li>
 </ul>
-<h2 id="重复支付"><a href="#重复支付" class="headerlink" title="重复支付"></a>重复支付</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">flowchart TD</span><br><span class="line">    A[重复支付]</span><br><span class="line">    B[重复下单]</span><br><span class="line">    C[重复支付订单]</span><br><span class="line"></span><br><span class="line">    A --&gt; B</span><br><span class="line">    A --&gt; C</span><br><span class="line"></span><br><span class="line">    D[&quot;` 设置事物过期时间2s 2s后要么数据库里有数据 要么回滚</span><br><span class="line">      隔离级别设置提交读</span><br><span class="line">    `&quot;]</span><br><span class="line"></span><br><span class="line">    B --&gt; D</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="重复支付"><a href="#重复支付" class="headerlink" title="重复支付"></a>重复支付</h2><pre class="mermaid">
+flowchart TD
+    A[重复支付]
+    B[重复下单]
+    C[重复支付订单]
+
+    A --> B
+    A --> C
+
+    D["` 设置事物过期时间2s 2s后要么数据库里有数据 要么回滚
+      隔离级别设置提交读
+    `"]
+
+    B --> D</pre>
 
 <p>用户对一个商品订单要有唯一索引<br>一个用户对一个商品订单进行多次渠道支付要复用之前渠道支付的订单</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    A[&quot;用户先用支付宝支付，扫码了但支付宝余额不够,取消支付宝支付&quot;]</span><br><span class="line">    B[&quot;选择再次支付，进行微信支付，也返回了二维码&quot;]</span><br><span class="line">    C[&quot;会创建新的支付订单&quot;]</span><br><span class="line">    D[&quot;`判断支付订单表，该笔商品订单有没有其他渠道且待支付的订单</span><br><span class="line">    还需要主动查询支付渠道状态，如果返回待支付则进行关闭，如果已支付了</span><br><span class="line">    返回已支付，请勿重复支付</span><br><span class="line">    `&quot;]</span><br><span class="line"></span><br><span class="line">    A --&gt; B</span><br><span class="line">    B --&gt; C</span><br><span class="line">    B --&gt; D</span><br></pre></td></tr></table></figure>
+<pre class="mermaid">flowchart TD
+    A["用户先用支付宝支付，扫码了但支付宝余额不够,取消支付宝支付"]
+    B["选择再次支付，进行微信支付，也返回了二维码"]
+    C["会创建新的支付订单"]
+    D["`判断支付订单表，该笔商品订单有没有其他渠道且待支付的订单
+    还需要主动查询支付渠道状态，如果返回待支付则进行关闭，如果已支付了
+    返回已支付，请勿重复支付
+    `"]
+
+    A --> B
+    B --> C
+    B --> D</pre>
 
 <h2 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h2><p>后期报表数据接口响应时间慢</p>
 <p>优化支付对账逻辑，提升对账速度</p>
