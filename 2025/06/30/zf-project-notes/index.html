@@ -14,7 +14,7 @@
 <meta property="og:description" content="项目 支付中台  对接微信支付宝接口  开发余额充值  开发退款  开发调账 seata处理  开发对账 后期采用redis set集合优化队长逻辑数据库连接过多   下单业务openfeign- 远程调用redissdiff 函数 取差集 对账定时任务 当天9点执行对账 拉取昨天的数据进行对账 充值充值 商品类型不用限制重复 需要限制重复下单 关单 graph TD      A[&quot;用户创建商品">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-06-30T03:23:30.000Z">
-<meta property="article:modified_time" content="2025-06-30T15:28:44.688Z">
+<meta property="article:modified_time" content="2025-07-01T13:50:00.922Z">
 <meta property="article:author" content="sc">
 <meta name="twitter:card" content="summary">
     
@@ -214,7 +214,7 @@ graph TD
 <li>不匹配返回0：如果不匹配，返回 0 表示释放失败</li>
 </ul>
 <h2 id="重复支付"><a href="#重复支付" class="headerlink" title="重复支付"></a>重复支付</h2><pre class="mermaid">
-flowchart TD
+graph TD
     A[重复支付]
     B[重复下单]
     C[重复支付订单]
@@ -229,7 +229,7 @@ flowchart TD
     B --> D</pre>
 
 <p>用户对一个商品订单要有唯一索引<br>一个用户对一个商品订单进行多次渠道支付要复用之前渠道支付的订单</p>
-<pre class="mermaid">flowchart TD
+<pre class="mermaid">graph TD
     A["用户先用支付宝支付，扫码了但支付宝余额不够,取消支付宝支付"]
     B["选择再次支付，进行微信支付，也返回了二维码"]
     C["会创建新的支付订单"]
@@ -260,6 +260,7 @@ flowchart TD
 <li>Xmn 设置年轻代大小</li>
 <li>Xss 设置每个线程的栈大小</li>
 <li>Xmx 和 Xms 一般设置为相同的值，避免堆大小</li>
+<li>XX:+UseG1GC 使用 G1 垃圾收集器</li>
 </ul>
 <h2 id="JMeter-进行压力测试"><a href="#JMeter-进行压力测试" class="headerlink" title="JMeter 进行压力测试"></a>JMeter 进行压力测试</h2><p>平稳的时候50%以下。 老年代30 40 新声代10 20<br>极端情况 70 - 80</p>
 <h2 id="上线流程"><a href="#上线流程" class="headerlink" title="上线流程"></a>上线流程</h2>
@@ -396,6 +397,15 @@ flowchart TD
 <!-- Disqus Comments -->
 
 <!-- utterances Comments -->
+
+
+
+  <script src='https://unpkg.com/mermaid@7.1.2/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({theme: 'forest'});
+    }
+  </script>
 
 </body>
 </html>
