@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Seata IntroductionSeata是一种开源分布式交易解决方案，旨在为微服务架构中的分布式系统提供高效且可靠的交易管理。它支持各种交易模式，包括AT（自动交易），TCC（Try-Confirm-Cancel）和SAGA，能够处理复杂的分布式交易方案。 Transaction TheoryCAP TheoremCAP定理是分布式系统中的基本原则，表明分布式系统不可能同时提供以下所有三个保">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Seata Notes">
+<meta property="og:url" content="http://example.com/2025/06/07/seata-notes/index.html">
+<meta property="og:site_name" content="SC&#39;s Blog">
+<meta property="og:description" content="Seata IntroductionSeata是一种开源分布式交易解决方案，旨在为微服务架构中的分布式系统提供高效且可靠的交易管理。它支持各种交易模式，包括AT（自动交易），TCC（Try-Confirm-Cancel）和SAGA，能够处理复杂的分布式交易方案。 Transaction TheoryCAP TheoremCAP定理是分布式系统中的基本原则，表明分布式系统不可能同时提供以下所有三个保">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-07%2018.31.34.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-07%2018.34.16.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2011.04.16.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2019.43.34.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2019.45.25.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2019.46.09.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2019.49.37.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2019.53.04.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2020.12.25.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2020.13.09.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2020.13.43.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-10%2019.20.11.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-10%2019.22.11.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-10%2019.24.46.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-11%2010.58.37.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-11%2011.02.07.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-11%2011.41.36.png">
+<meta property="og:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-11%2011.47.25.png">
+<meta property="article:published_time" content="2025-06-07T10:31:34.000Z">
+<meta property="article:modified_time" content="2025-06-30T15:28:38.759Z">
+<meta property="article:author" content="sc">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/seata/%E6%88%AA%E5%B1%8F2025-06-07%2018.31.34.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Seata Notes</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="上一篇" href="/2025/06/29/hexo-notes/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2025/06/07/seata-notes/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2025/06/07/seata-notes/&text=Seata Notes"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2025/06/07/seata-notes/&title=Seata Notes"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2025/06/07/seata-notes/&is_video=false&description=Seata Notes"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Seata Notes&body=Check out this article: http://example.com/2025/06/07/seata-notes/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2025/06/07/seata-notes/&title=Seata Notes"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2025/06/07/seata-notes/&title=Seata Notes"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2025/06/07/seata-notes/&title=Seata Notes"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2025/06/07/seata-notes/&title=Seata Notes"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2025/06/07/seata-notes/&name=Seata Notes&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2025/06/07/seata-notes/&t=Seata Notes"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Seata-Introduction"><span class="toc-number">1.</span> <span class="toc-text">Seata Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Transaction-Theory"><span class="toc-number">2.</span> <span class="toc-text">Transaction Theory</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CAP-Theorem"><span class="toc-number">2.1.</span> <span class="toc-text">CAP Theorem</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BASE-Theory"><span class="toc-number">2.2.</span> <span class="toc-text">BASE Theory</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Seata-Architecture"><span class="toc-number">3.</span> <span class="toc-text">Seata Architecture</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%89%8B%E5%AE%9E%E8%B7%B5"><span class="toc-number">4.</span> <span class="toc-text">动手实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#XA%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.1.</span> <span class="toc-text">XA模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Seata-%E4%B8%ADxa%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.2.</span> <span class="toc-text">Seata 中xa模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AT%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.3.</span> <span class="toc-text">AT模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TCC%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.4.</span> <span class="toc-text">TCC模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SAGA%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.5.</span> <span class="toc-text">SAGA模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E7%A7%8D%E5%AF%B9%E6%AF%94"><span class="toc-number">4.6.</span> <span class="toc-text">四种对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="toc-number">5.</span> <span class="toc-text">高可用</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Seata Notes
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">sc</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2025-06-07T10:31:34.000Z" class="dt-published" itemprop="datePublished">2025-06-07</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="Seata-Introduction"><a href="#Seata-Introduction" class="headerlink" title="Seata Introduction"></a>Seata Introduction</h2><p>Seata是一种开源分布式交易解决方案，旨在为微服务架构中的分布式系统提供高效且可靠的交易管理。它支持各种交易模式，包括AT（自动交易），TCC（Try-Confirm-Cancel）和SAGA，能够处理复杂的分布式交易方案。</p>
+<h2 id="Transaction-Theory"><a href="#Transaction-Theory" class="headerlink" title="Transaction Theory"></a>Transaction Theory</h2><h3 id="CAP-Theorem"><a href="#CAP-Theorem" class="headerlink" title="CAP Theorem"></a>CAP Theorem</h3><p>CAP定理是分布式系统中的基本原则，表明分布式系统不可能同时提供以下所有三个保证：</p>
+<ol>
+<li><strong>一致性</strong> ：所有节点都会同时看到相同的数据。 </li>
+<li><strong>可用性</strong> ：每个请求都会在有限的时间内收到响应。 </li>
+<li><strong>分区耐受性</strong> ：尽管进行了网络分区，该系统仍继续运行。</li>
+</ol>
+<h3 id="BASE-Theory"><a href="#BASE-Theory" class="headerlink" title="BASE Theory"></a>BASE Theory</h3><p>基本理论是对CAP定理的解决方案，其中包括以下三个原则：</p>
+<ol>
+<li><strong>基本上可用</strong> ：当系统失败时，允许丢失可用性，但是系统核心仍在运行。 </li>
+<li><strong>软状态</strong> ：在有限的时间内，允许临时不一致等中间状态。 </li>
+<li><strong>最终的一致性</strong> ：如果有足够的时间，该系统最终将变得一致，没有新的更新。</li>
+</ol>
+<p>AP模式： 各子事物分别执行和提交，采取弥补措施，达到最终一致<br>CP模式： 各子事物之行后互相等待，同时提交，同时回滚，达成强一致，但事务处理过程中，系统处于弱可用状态</p>
+<h2 id="Seata-Architecture"><a href="#Seata-Architecture" class="headerlink" title="Seata Architecture"></a>Seata Architecture</h2><p>Seate 事务管理中三个角色</p>
+<ol>
+<li>TC (Transaction Coordinator): 事物协调者，维护全局和分支事物的状态，协调全局事物提交或回滚。</li>
+<li>TM (Transaction Manager): 事务管理器，负责发起全局事务和分支事务的注册，提交或回滚请求。 </li>
+<li>RM (Resource Manager): 资源管理器，负责管理分支事务的资源，如数据库连接、消息队列等，与TC交谈以注册分支事物和报告分支事物的状态，并驱动分支事物提交和回滚。</li>
+</ol>
+<p>Seata 提供了四种不同的分布式事务解决方案</p>
+<ul>
+<li><strong>XA模式</strong> : 强一致分阶段事物模式，牺牲了一定的可用性，无业务侵入</li>
+<li><strong>TCC模式</strong> : 最终一致的分阶段事物模式，有业务侵入</li>
+<li><strong>AT模式</strong> : 最终一致的分阶段事物模式，无业务模式，也是seata的默认模式</li>
+<li><strong>SAGA模式</strong> : 长事务模式，有业务侵入</li>
+</ul>
+<h2 id="动手实践"><a href="#动手实践" class="headerlink" title="动手实践"></a>动手实践</h2><h3 id="XA模式"><a href="#XA模式" class="headerlink" title="XA模式"></a>XA模式</h3><p>XA 模式是处理DTP标准，俩个阶段</p>
+<ul>
+<li>准备阶段：协调者向RM发起准备请求 就绪后告诉事物协调者</li>
+<li>提交阶段：协调者向RM发起提交请求， RM执行提交操作  </li>
+<li>失败阶段：协调者向RM发起回滚请求，RM执行回滚操作</li>
+</ul>
+<h3 id="Seata-中xa模式"><a href="#Seata-中xa模式" class="headerlink" title="Seata 中xa模式"></a>Seata 中xa模式</h3><p><img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-07%2018.31.34.png" alt="xa"></p>
+<p><img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-07%2018.34.16.png" alt="xa_"></p>
+<p>XA模式优点：</p>
+<ul>
+<li>强一致性：满足ACID原则</li>
+<li>常用数据库都支持，实现简单，且没有代码侵入<br>XA模式缺点：</li>
+<li>因为一阶段要锁定数据库资源，等待二阶段结束才释放，性能差</li>
+<li>依赖关系型数据库实现事物<br>XA模式实现：</li>
+</ul>
+<p><img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2011.04.16.png" alt="XA Mode Impl"></p>
+<h3 id="AT模式"><a href="#AT模式" class="headerlink" title="AT模式"></a>AT模式</h3><p>AT模式同样是分阶段提交的，不过弥补了XA模型中资源锁定周期过长的缺陷</p>
+<p><img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2019.43.34.png" alt="AT"></p>
+<p><img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2019.45.25.png" alt="AT_"></p>
+<p><img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2019.46.09.png" alt="AT__"></p>
+<p>并发访问 安全问题<img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2019.49.37.png" alt="alt text"></p>
+<p>AT引入全局锁解决脏写问题<img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2019.53.04.png" alt="alt text"></p>
+<p>AT模式的写隔离<img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2020.12.25.png" alt="alt text"></p>
+<p>总结：<img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2020.13.09.png" alt="alt text"></p>
+<p>AT模式实现：<img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-09%2020.13.43.png" alt="ALT TEXT"></p>
+<p>俩张表：<br>    - 全局锁 放到TC服务关联的数据库<br>    - undo_log 放到微服务相关的数据库</p>
+<h3 id="TCC模式"><a href="#TCC模式" class="headerlink" title="TCC模式"></a>TCC模式</h3><p>TCC模式与AT模式相似，每段都是独立事物，不同的是tcc需要人工编码实现数据恢复。需要实现三个方法：</p>
+<ol>
+<li><strong>Try</strong>: 尝试阶段，预留资源，检查资源是否可用。</li>
+<li><strong>Confirm</strong>: 完成资源操作业务，要求Try成功Confirm也必须成功。</li>
+<li><strong>Cancel</strong>: 取消阶段，释放资源，try的反向操作。</li>
+</ol>
+<p><img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-10%2019.20.11.png" alt="alt text"></p>
+<p><img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-10%2019.22.11.png" alt="alt text"></p>
+<p><img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-10%2019.24.46.png" alt="alt text"></p>
+<p><img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-11%2010.58.37.png" alt="alt text"></p>
+<p><img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-11%2011.02.07.png" alt="alt text"></p>
+<h3 id="SAGA模式"><a href="#SAGA模式" class="headerlink" title="SAGA模式"></a>SAGA模式</h3><p>Sage模式是seata提供的长事务解决方案。也分为俩个阶段：</p>
+<ol>
+<li><strong>Try</strong>: 直接提交本地事物</li>
+<li><strong>Compensate</strong>: 成功则什么都不做，失败则通过编写补偿代码来回滚事物。</li>
+</ol>
+<p><img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-11%2011.41.36.png" alt="alt text"></p>
+<h3 id="四种对比"><a href="#四种对比" class="headerlink" title="四种对比"></a>四种对比</h3><p><img src="/images/seata/%E6%88%AA%E5%B1%8F2025-06-11%2011.47.25.png" alt="alt text"></p>
+<h2 id="高可用"><a href="#高可用" class="headerlink" title="高可用"></a>高可用</h2><p>异地多机房容灾方案：放在nacos上集群 修改配置</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Seata-Introduction"><span class="toc-number">1.</span> <span class="toc-text">Seata Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Transaction-Theory"><span class="toc-number">2.</span> <span class="toc-text">Transaction Theory</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CAP-Theorem"><span class="toc-number">2.1.</span> <span class="toc-text">CAP Theorem</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BASE-Theory"><span class="toc-number">2.2.</span> <span class="toc-text">BASE Theory</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Seata-Architecture"><span class="toc-number">3.</span> <span class="toc-text">Seata Architecture</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%89%8B%E5%AE%9E%E8%B7%B5"><span class="toc-number">4.</span> <span class="toc-text">动手实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#XA%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.1.</span> <span class="toc-text">XA模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Seata-%E4%B8%ADxa%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.2.</span> <span class="toc-text">Seata 中xa模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AT%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.3.</span> <span class="toc-text">AT模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TCC%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.4.</span> <span class="toc-text">TCC模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SAGA%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.5.</span> <span class="toc-text">SAGA模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E7%A7%8D%E5%AF%B9%E6%AF%94"><span class="toc-number">4.6.</span> <span class="toc-text">四种对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="toc-number">5.</span> <span class="toc-text">高可用</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2025/06/07/seata-notes/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2025/06/07/seata-notes/&text=Seata Notes"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2025/06/07/seata-notes/&title=Seata Notes"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2025/06/07/seata-notes/&is_video=false&description=Seata Notes"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Seata Notes&body=Check out this article: http://example.com/2025/06/07/seata-notes/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2025/06/07/seata-notes/&title=Seata Notes"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2025/06/07/seata-notes/&title=Seata Notes"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2025/06/07/seata-notes/&title=Seata Notes"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2025/06/07/seata-notes/&title=Seata Notes"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2025/06/07/seata-notes/&name=Seata Notes&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2025/06/07/seata-notes/&t=Seata Notes"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2025
+    sc
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="项目 支付中台  对接微信支付宝接口  开发余额充值  开发退款  开发调账 seata处理  开发对账 后期采用redis set集合优化队长逻辑数据库连接过多   下单业务openfeign- 远程调用redissdiff 函数 取差集 对账定时任务 当天9点执行对账 拉取昨天的数据进行对账 充值充值 商品类型不用限制重复 需要限制重复下单 关单1234567graph TD    A[&amp;qu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="zf Project Notes">
+<meta property="og:url" content="http://example.com/2025/06/30/zf-project-notes/index.html">
+<meta property="og:site_name" content="SC&#39;s Blog">
+<meta property="og:description" content="项目 支付中台  对接微信支付宝接口  开发余额充值  开发退款  开发调账 seata处理  开发对账 后期采用redis set集合优化队长逻辑数据库连接过多   下单业务openfeign- 远程调用redissdiff 函数 取差集 对账定时任务 当天9点执行对账 拉取昨天的数据进行对账 充值充值 商品类型不用限制重复 需要限制重复下单 关单1234567graph TD    A[&amp;qu">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-06-30T03:23:30.000Z">
+<meta property="article:modified_time" content="2025-06-30T15:28:44.688Z">
+<meta property="article:author" content="sc">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>zf Project Notes</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="上一篇" href="/2025/06/30/jj-learn/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="下一篇" href="/2025/06/29/hexo-notes/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2025/06/30/zf-project-notes/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2025/06/30/zf-project-notes/&text=zf Project Notes"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2025/06/30/zf-project-notes/&title=zf Project Notes"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2025/06/30/zf-project-notes/&is_video=false&description=zf Project Notes"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=zf Project Notes&body=Check out this article: http://example.com/2025/06/30/zf-project-notes/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2025/06/30/zf-project-notes/&title=zf Project Notes"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2025/06/30/zf-project-notes/&title=zf Project Notes"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2025/06/30/zf-project-notes/&title=zf Project Notes"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2025/06/30/zf-project-notes/&title=zf Project Notes"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2025/06/30/zf-project-notes/&name=zf Project Notes&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2025/06/30/zf-project-notes/&t=zf Project Notes"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE"><span class="toc-number">1.</span> <span class="toc-text">项目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8B%E5%8D%95%E4%B8%9A%E5%8A%A1"><span class="toc-number">2.</span> <span class="toc-text">下单业务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#openfeign-%E8%BF%9C%E7%A8%8B%E8%B0%83%E7%94%A8"><span class="toc-number">3.</span> <span class="toc-text">openfeign- 远程调用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#redis"><span class="toc-number">4.</span> <span class="toc-text">redis</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E8%B4%A6"><span class="toc-number">5.</span> <span class="toc-text">对账</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%85%E5%80%BC"><span class="toc-number">6.</span> <span class="toc-text">充值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E5%8D%95"><span class="toc-number">7.</span> <span class="toc-text">关单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%84%E5%90%88%E6%94%AF%E4%BB%98"><span class="toc-number">8.</span> <span class="toc-text">组合支付</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E5%A4%8D%E4%B8%8B%E5%8D%95"><span class="toc-number">9.</span> <span class="toc-text">重复下单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E5%A4%8D%E6%94%AF%E4%BB%98"><span class="toc-number">10.</span> <span class="toc-text">重复支付</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><span class="toc-number">11.</span> <span class="toc-text">性能优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%BF%E4%B8%8A%E9%97%AE%E9%A2%98"><span class="toc-number">12.</span> <span class="toc-text">线上问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E5%A4%8D%E9%80%9A%E7%9F%A5%E9%97%AE%E9%A2%98%EF%BC%88%E5%B9%82%E7%AD%89%E5%A7%93%EF%BC%89"><span class="toc-number">13.</span> <span class="toc-text">重复通知问题（幂等姓）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%AD%E4%BB%A3%E5%91%A8%E6%9C%9F"><span class="toc-number">14.</span> <span class="toc-text">迭代周期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jvm-%E5%86%85%E5%AD%98%E6%80%8E%E4%B9%88%E8%AE%BE%E7%BD%AE"><span class="toc-number">15.</span> <span class="toc-text">jvm 内存怎么设置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JMeter-%E8%BF%9B%E8%A1%8C%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95"><span class="toc-number">16.</span> <span class="toc-text">JMeter 进行压力测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8A%E7%BA%BF%E6%B5%81%E7%A8%8B"><span class="toc-number">17.</span> <span class="toc-text">上线流程</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        zf Project Notes
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">sc</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2025-06-30T03:23:30.000Z" class="dt-published" itemprop="datePublished">2025-06-30</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="项目"><a href="#项目" class="headerlink" title="项目"></a>项目</h2><ul>
+<li><p>支付中台</p>
+</li>
+<li><p>对接微信支付宝接口</p>
+</li>
+<li><p>开发余额充值</p>
+</li>
+<li><p>开发退款</p>
+</li>
+<li><p>开发调账 seata处理</p>
+</li>
+<li><p>开发对账 后期采用redis set集合优化队长逻辑数据库连接过多</p>
+</li>
+</ul>
+<h2 id="下单业务"><a href="#下单业务" class="headerlink" title="下单业务"></a>下单业务</h2><h2 id="openfeign-远程调用"><a href="#openfeign-远程调用" class="headerlink" title="openfeign- 远程调用"></a>openfeign- 远程调用</h2><h2 id="redis"><a href="#redis" class="headerlink" title="redis"></a>redis</h2><p>sdiff 函数 取差集</p>
+<h2 id="对账"><a href="#对账" class="headerlink" title="对账"></a>对账</h2><p>定时任务 当天9点执行对账 拉取昨天的数据进行对账</p>
+<h2 id="充值"><a href="#充值" class="headerlink" title="充值"></a>充值</h2><p>充值 商品类型不用限制重复 需要限制重复下单</p>
+<h2 id="关单"><a href="#关单" class="headerlink" title="关单"></a>关单</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">graph TD</span><br><span class="line"></span><br><span class="line">    A[&quot;用户创建商品订单&quot;] --&gt; |&quot;发送延迟消息，5分钟后消费&quot;| B[&quot;消费者通过商品订单号查询数据库支付状态,如果是已支付不进行操作&quot;]</span><br><span class="line"></span><br><span class="line">    B --&gt;|&quot;如果是未支付&quot;| C[&quot;通过商品订单号查询关联的支付订单号，一一查询支付渠道状态，如果都没有支付成功进行关单，并且把支付订单调用第三方关单接口进行关单，关闭不仅要关闭本地的，还需要关闭第三方的订单(WX,AliPay)&quot;]</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="组合支付"><a href="#组合支付" class="headerlink" title="组合支付"></a>组合支付</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">graph TD</span><br><span class="line"></span><br><span class="line">    A(&quot;先扣除余额，在扣除渠道&quot;)</span><br><span class="line"></span><br><span class="line">    A_A(&quot;扣除完余额后，若没扫码，退余额麻烦。扫码了但是需要等回调&quot;)</span><br><span class="line"></span><br><span class="line">    B(&quot;在渠道支付成功后，更新余额&quot;) </span><br><span class="line"></span><br><span class="line">    B_B(&quot;扫码了但是需要等回调，这时还有余额，用户又下单，抵扣余额，渠道再次支付，扣除失败 但是对渠道就不好处理了&quot;)</span><br><span class="line"></span><br><span class="line">    A --&gt; A_A</span><br><span class="line"></span><br><span class="line">    B --&gt; B_B</span><br><span class="line"></span><br><span class="line">    C(&quot;冻结余额，扫码后再解冻并扣除余额&quot;)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="重复下单"><a href="#重复下单" class="headerlink" title="重复下单"></a>重复下单</h2><p>还有事物@Transactional(timeout &#x3D; 2, isolation &#x3D; Isolation.READ_COMMITTED)</p>
+<p>注意：锁外查询一次 锁内要再次查询</p>
+<p>redis setnx (set if not exists) 解决重复下单问题</p>
+<p>redis 加锁lua脚本</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> redis.call(<span class="string">&#x27;setnx&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">1</span>]) == <span class="number">1</span> <span class="keyword">then</span> </span><br><span class="line">    redis.call(<span class="string">&#x27;expire&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">2</span>]) </span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span> </span><br><span class="line"><span class="keyword">else</span> </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span> </span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>脚本说明：<br>    - 如果redis设置成功，则返回1，并设置过期时间<br>    - 如果redis设置失败，则返回0</p>
+<p>redis 释放lua 脚本</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> redis.call(<span class="string">&#x27;get&#x27;</span>, KEYS[<span class="number">1</span>]) == ARGV[<span class="number">1</span>] <span class="keyword">then</span> </span><br><span class="line">    <span class="keyword">return</span> redis.call(<span class="string">&#x27;del&#x27;</span>, KEYS[<span class="number">1</span>]) </span><br><span class="line"><span class="keyword">else</span> </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span> </span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>脚本说明：<br>    - 如果redis的值与传入的值匹配，则删除该键并返回成功<br>    - 如果不匹配，则返回0表示释放失败</p>
+<p>参数说明</p>
+<ul>
+<li>KEYS[1]：锁的 key（例如：distributed_lock:pay:123:alipay:ORDER001:createPayment）</li>
+<li>ARGV[1]：锁的 value（通常是 UUID，用于标识锁的持有者）</li>
+</ul>
+<p>执行逻辑</p>
+<ul>
+<li>获取锁的当前值：redis.call(‘get’, KEYS[1])</li>
+<li>比较值是否匹配：检查当前锁的值是否等于传入的 ARGV[1]</li>
+<li>匹配则删除锁：如果匹配，执行 redis.call(‘del’, KEYS[1]) 删除锁</li>
+<li>不匹配返回0：如果不匹配，返回 0 表示释放失败</li>
+</ul>
+<h2 id="重复支付"><a href="#重复支付" class="headerlink" title="重复支付"></a>重复支付</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">flowchart TD</span><br><span class="line">    A[重复支付]</span><br><span class="line">    B[重复下单]</span><br><span class="line">    C[重复支付订单]</span><br><span class="line"></span><br><span class="line">    A --&gt; B</span><br><span class="line">    A --&gt; C</span><br><span class="line"></span><br><span class="line">    D[&quot;` 设置事物过期时间2s 2s后要么数据库里有数据 要么回滚</span><br><span class="line">      隔离级别设置提交读</span><br><span class="line">    `&quot;]</span><br><span class="line"></span><br><span class="line">    B --&gt; D</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>用户对一个商品订单要有唯一索引<br>一个用户对一个商品订单进行多次渠道支付要复用之前渠道支付的订单</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    A[&quot;用户先用支付宝支付，扫码了但支付宝余额不够,取消支付宝支付&quot;]</span><br><span class="line">    B[&quot;选择再次支付，进行微信支付，也返回了二维码&quot;]</span><br><span class="line">    C[&quot;会创建新的支付订单&quot;]</span><br><span class="line">    D[&quot;`判断支付订单表，该笔商品订单有没有其他渠道且待支付的订单</span><br><span class="line">    还需要主动查询支付渠道状态，如果返回待支付则进行关闭，如果已支付了</span><br><span class="line">    返回已支付，请勿重复支付</span><br><span class="line">    `&quot;]</span><br><span class="line"></span><br><span class="line">    A --&gt; B</span><br><span class="line">    B --&gt; C</span><br><span class="line">    B --&gt; D</span><br></pre></td></tr></table></figure>
+
+<h2 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h2><p>后期报表数据接口响应时间慢</p>
+<p>优化支付对账逻辑，提升对账速度</p>
+<p>引入设计模式优化代码结构，方便后期迭代</p>
+<h2 id="线上问题"><a href="#线上问题" class="headerlink" title="线上问题"></a>线上问题</h2><p>JVM内存溢出问题</p>
+<ul>
+<li>线上支付对账接口响应时间慢</li>
+<li>线上支付对账接口响应时间慢，导致支付对账线程池满了</li>
+</ul>
+<p>企业内部内存监控平台 监控gc次数 每次gc后内存的释放率 要求full gc一天不能超过2次</p>
+<h2 id="重复通知问题（幂等姓）"><a href="#重复通知问题（幂等姓）" class="headerlink" title="重复通知问题（幂等姓）"></a>重复通知问题（幂等姓）</h2><p>防重表加唯一索引</p>
+<p>乐观锁</p>
+<h2 id="迭代周期"><a href="#迭代周期" class="headerlink" title="迭代周期"></a>迭代周期</h2><p>一个月2-3次</p>
+<h2 id="jvm-内存怎么设置"><a href="#jvm-内存怎么设置" class="headerlink" title="jvm 内存怎么设置"></a>jvm 内存怎么设置</h2><ul>
+<li>Xms 设置初始堆大小</li>
+<li>Xmx 设置最大堆大小</li>
+<li>Xmn 设置年轻代大小</li>
+<li>Xss 设置每个线程的栈大小</li>
+<li>Xmx 和 Xms 一般设置为相同的值，避免堆大小</li>
+</ul>
+<h2 id="JMeter-进行压力测试"><a href="#JMeter-进行压力测试" class="headerlink" title="JMeter 进行压力测试"></a>JMeter 进行压力测试</h2><p>平稳的时候50%以下。 老年代30 40 新声代10 20<br>极端情况 70 - 80</p>
+<h2 id="上线流程"><a href="#上线流程" class="headerlink" title="上线流程"></a>上线流程</h2>
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE"><span class="toc-number">1.</span> <span class="toc-text">项目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8B%E5%8D%95%E4%B8%9A%E5%8A%A1"><span class="toc-number">2.</span> <span class="toc-text">下单业务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#openfeign-%E8%BF%9C%E7%A8%8B%E8%B0%83%E7%94%A8"><span class="toc-number">3.</span> <span class="toc-text">openfeign- 远程调用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#redis"><span class="toc-number">4.</span> <span class="toc-text">redis</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E8%B4%A6"><span class="toc-number">5.</span> <span class="toc-text">对账</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%85%E5%80%BC"><span class="toc-number">6.</span> <span class="toc-text">充值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E5%8D%95"><span class="toc-number">7.</span> <span class="toc-text">关单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%84%E5%90%88%E6%94%AF%E4%BB%98"><span class="toc-number">8.</span> <span class="toc-text">组合支付</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E5%A4%8D%E4%B8%8B%E5%8D%95"><span class="toc-number">9.</span> <span class="toc-text">重复下单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E5%A4%8D%E6%94%AF%E4%BB%98"><span class="toc-number">10.</span> <span class="toc-text">重复支付</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><span class="toc-number">11.</span> <span class="toc-text">性能优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%BF%E4%B8%8A%E9%97%AE%E9%A2%98"><span class="toc-number">12.</span> <span class="toc-text">线上问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E5%A4%8D%E9%80%9A%E7%9F%A5%E9%97%AE%E9%A2%98%EF%BC%88%E5%B9%82%E7%AD%89%E5%A7%93%EF%BC%89"><span class="toc-number">13.</span> <span class="toc-text">重复通知问题（幂等姓）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%AD%E4%BB%A3%E5%91%A8%E6%9C%9F"><span class="toc-number">14.</span> <span class="toc-text">迭代周期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jvm-%E5%86%85%E5%AD%98%E6%80%8E%E4%B9%88%E8%AE%BE%E7%BD%AE"><span class="toc-number">15.</span> <span class="toc-text">jvm 内存怎么设置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JMeter-%E8%BF%9B%E8%A1%8C%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95"><span class="toc-number">16.</span> <span class="toc-text">JMeter 进行压力测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8A%E7%BA%BF%E6%B5%81%E7%A8%8B"><span class="toc-number">17.</span> <span class="toc-text">上线流程</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2025/06/30/zf-project-notes/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2025/06/30/zf-project-notes/&text=zf Project Notes"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2025/06/30/zf-project-notes/&title=zf Project Notes"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2025/06/30/zf-project-notes/&is_video=false&description=zf Project Notes"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=zf Project Notes&body=Check out this article: http://example.com/2025/06/30/zf-project-notes/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2025/06/30/zf-project-notes/&title=zf Project Notes"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2025/06/30/zf-project-notes/&title=zf Project Notes"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2025/06/30/zf-project-notes/&title=zf Project Notes"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2025/06/30/zf-project-notes/&title=zf Project Notes"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2025/06/30/zf-project-notes/&name=zf Project Notes&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2025/06/30/zf-project-notes/&t=zf Project Notes"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2025
+    sc
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
