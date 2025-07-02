@@ -6,15 +6,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-    <meta name="description" content="JVM 概述Java Virtual Machine (JVM) 是 Java 语言的运行环境，负责加载、验证、解释和执行 Java 字节码。 .class 文件 通过jvm 转换到各个平台可以执行的机器指令 JVM 结构JVM 由类加载系统、运行时数据区和执行引擎构成。 类加载系统首先读取指定的类文件 并遵循双亲委派机制进行加载 双亲委派机制 类加载请求：  当某个类加载器（如应用类加载器）收到">
+    <meta name="description" content="JVM 概述Java Virtual Machine (JVM) 是 Java 语言的运行环境，负责加载、验证、解释和执行 Java 字节码。 .class 文件通过 JVM 转换到各个平台可以执行的机器指令。 JVM 结构JVM 由类加载系统、运行时数据区和执行引擎构成。 类加载系统类加载系统首先读取指定的类文件，并遵循双亲委派机制进行加载。 双亲委派机制 类加载请求：  当某个类加载器（如应用">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JVM Notes">
 <meta property="og:url" content="http://example.com/2025/06/30/jvm-notes/index.html">
 <meta property="og:site_name" content="SC&#39;s Blog">
-<meta property="og:description" content="JVM 概述Java Virtual Machine (JVM) 是 Java 语言的运行环境，负责加载、验证、解释和执行 Java 字节码。 .class 文件 通过jvm 转换到各个平台可以执行的机器指令 JVM 结构JVM 由类加载系统、运行时数据区和执行引擎构成。 类加载系统首先读取指定的类文件 并遵循双亲委派机制进行加载 双亲委派机制 类加载请求：  当某个类加载器（如应用类加载器）收到">
+<meta property="og:description" content="JVM 概述Java Virtual Machine (JVM) 是 Java 语言的运行环境，负责加载、验证、解释和执行 Java 字节码。 .class 文件通过 JVM 转换到各个平台可以执行的机器指令。 JVM 结构JVM 由类加载系统、运行时数据区和执行引擎构成。 类加载系统类加载系统首先读取指定的类文件，并遵循双亲委派机制进行加载。 双亲委派机制 类加载请求：  当某个类加载器（如应用">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-06-30T15:50:17.000Z">
-<meta property="article:modified_time" content="2025-07-02T03:18:22.771Z">
+<meta property="article:modified_time" content="2025-07-02T03:53:26.129Z">
 <meta property="article:author" content="sc">
 <meta name="twitter:card" content="summary">
     
@@ -110,7 +110,7 @@
     
     
       <div id="toc">
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#JVM-%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">JVM 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JVM-%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">JVM 结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%9C%BA%E5%88%B6"><span class="toc-number">2.1.</span> <span class="toc-text">双亲委派机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F%EF%BC%9A"><span class="toc-number">2.2.</span> <span class="toc-text">加载顺序：</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#JVM-%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">JVM 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JVM-%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">JVM 结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E7%B3%BB%E7%BB%9F"><span class="toc-number">3.</span> <span class="toc-text">类加载系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%9C%BA%E5%88%B6"><span class="toc-number">3.1.</span> <span class="toc-text">双亲委派机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F"><span class="toc-number">3.2.</span> <span class="toc-text">加载顺序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B"><span class="toc-number">4.</span> <span class="toc-text">类加载过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E"><span class="toc-number">5.</span> <span class="toc-text">执行引擎</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%A8%A1%E5%BC%8F"><span class="toc-number">5.1.</span> <span class="toc-text">工作模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E6%96%B9%E6%B3%95%E6%89%A7%E8%A1%8C"><span class="toc-number">5.2.</span> <span class="toc-text">主方法执行</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc-number">6.</span> <span class="toc-text">内存管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A0%86%E5%86%85%E5%AD%98%E5%88%86%E4%BB%A3%E8%AE%BE%E8%AE%A1"><span class="toc-number">6.1.</span> <span class="toc-text">堆内存分代设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E8%BF%87%E7%A8%8B"><span class="toc-number">6.2.</span> <span class="toc-text">对象内存分配过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%AD%96%E7%95%A5"><span class="toc-number">6.3.</span> <span class="toc-text">内存分配策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6"><span class="toc-number">7.</span> <span class="toc-text">垃圾回收</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8E%E7%BB%AD%E6%B5%81%E7%A8%8B"><span class="toc-number">8.</span> <span class="toc-text">后续流程</span></a></li></ol>
       </div>
     
   </span>
@@ -151,31 +151,42 @@
 
   <div class="content e-content" itemprop="articleBody">
     <h2 id="JVM-概述"><a href="#JVM-概述" class="headerlink" title="JVM 概述"></a>JVM 概述</h2><p>Java Virtual Machine (JVM) 是 Java 语言的运行环境，负责加载、验证、解释和执行 Java 字节码。</p>
-<p>.class 文件 通过jvm 转换到各个平台可以执行的机器指令</p>
+<p>.class 文件通过 JVM 转换到各个平台可以执行的机器指令。</p>
 <h2 id="JVM-结构"><a href="#JVM-结构" class="headerlink" title="JVM 结构"></a>JVM 结构</h2><p>JVM 由类加载系统、运行时数据区和执行引擎构成。</p>
-<p>类加载系统首先读取指定的类文件 并遵循双亲委派机制进行加载</p>
-<h3 id="双亲委派机制"><a href="#双亲委派机制" class="headerlink" title="双亲委派机制"></a>双亲委派机制</h3><ul>
-<li><p>类加载请求：</p>
+<h2 id="类加载系统"><a href="#类加载系统" class="headerlink" title="类加载系统"></a>类加载系统</h2><p>类加载系统首先读取指定的类文件，并遵循双亲委派机制进行加载。</p>
+<h3 id="双亲委派机制"><a href="#双亲委派机制" class="headerlink" title="双亲委派机制"></a>双亲委派机制</h3><ol>
+<li><p><strong>类加载请求</strong>：</p>
 <ul>
 <li>当某个类加载器（如应用类加载器）收到加载某个类的请求时，它不会直接尝试加载该类。</li>
 </ul>
 </li>
-<li><p>向父加载器委派：</p>
+<li><p><strong>向父加载器委派</strong>：</p>
 <ul>
-<li>它会先将这个请求委派给它的父类加载器。<br>  父类加载器再继续向它的父类加载器委派，直到到达顶层的 Bootstrap ClassLoader（启动类加载器）。</li>
+<li>它会先将这个请求委派给它的父类加载器。</li>
+<li>父类加载器再继续向它的父类加载器委派，直到到达顶层的 Bootstrap ClassLoader（启动类加载器）。</li>
 </ul>
 </li>
-<li><p>加载类：</p>
+<li><p><strong>加载类</strong>：</p>
 <ul>
-<li>顶层的 Bootstrap ClassLoader 会尝试加载该类。<br>  如果它无法加载，则将控制权交还给子加载器，依次向下传递，直到找到能够加载该类的加载器。</li>
+<li>顶层的 Bootstrap ClassLoader 会尝试加载该类。</li>
+<li>如果它无法加载，则将控制权交还给子加载器，依次向下传递，直到找到能够加载该类的加载器。</li>
 </ul>
 </li>
+</ol>
+<h3 id="加载顺序"><a href="#加载顺序" class="headerlink" title="加载顺序"></a>加载顺序</h3><ol>
+<li><strong>Bootstrap ClassLoader（启动类加载器）</strong>：<ul>
+<li>加载核心类库（如 rt.jar 中的类）。</li>
 </ul>
-<h3 id="加载顺序："><a href="#加载顺序：" class="headerlink" title="加载顺序："></a>加载顺序：</h3><ul>
-<li>Bootstrap ClassLoader（启动类加载器）：<br>加载核心类库（如 rt.jar 中的类）。</li>
-<li>Extension ClassLoader（扩展类加载器）：<br>加载扩展类库（如 jre&#x2F;lib&#x2F;ext 目录下的类）。</li>
-<li>Application ClassLoader（应用类加载器）：<br>加载应用程序的类（如 classpath 下的类）。</li>
+</li>
+<li><strong>Extension ClassLoader（扩展类加载器）</strong>：<ul>
+<li>加载扩展类库（如 jre&#x2F;lib&#x2F;ext 目录下的类）。</li>
 </ul>
+</li>
+<li><strong>Application ClassLoader（应用类加载器）</strong>：<ul>
+<li>加载应用程序的类（如 classpath 下的类）。</li>
+</ul>
+</li>
+</ol>
 <pre class="mermaid">graph TD
     A["BootStrapClassLoader(引导类加载器)"]
     B["ExtensionClassLoader(扩展类加载器)"]
@@ -193,7 +204,6 @@
     B --> D
     D --> A
     
-
     A --> E
     E --> B
     B --> E1
@@ -201,7 +211,69 @@
     C --> E2
     E2 --> CC</pre>
 
-<p>将文件中的常量池、字段、方法和指令加载到JVM内存的共享区域方法区中，然后对其进行验证（保证其字节码的合法性），在方法区为静态变量分配内存空间，并设置默认值</p>
+<h2 id="类加载过程"><a href="#类加载过程" class="headerlink" title="类加载过程"></a>类加载过程</h2><ol>
+<li><p><strong>加载</strong>：</p>
+<ul>
+<li>将文件中的常量池、字段、方法和指令加载到 JVM 内存的共享区域方法区中。</li>
+</ul>
+</li>
+<li><p><strong>验证</strong>：</p>
+<ul>
+<li>验证类文件的字节码是否符合 JVM 规范，确保类的正确性和安全性。</li>
+</ul>
+</li>
+<li><p><strong>准备</strong>：</p>
+<ul>
+<li>为类的静态变量分配内存空间，并设置默认值（如 0、null 等）。</li>
+</ul>
+</li>
+<li><p><strong>解析</strong>：</p>
+<ul>
+<li>常量池中表示对象的符号引用指向到实际的内存地址，也就是直接引用。</li>
+</ul>
+</li>
+<li><p><strong>初始化</strong>：</p>
+<ul>
+<li>执行类的静态代码块和静态变量的初始化。</li>
+</ul>
+</li>
+</ol>
+<h2 id="执行引擎"><a href="#执行引擎" class="headerlink" title="执行引擎"></a>执行引擎</h2><h3 id="工作模式"><a href="#工作模式" class="headerlink" title="工作模式"></a>工作模式</h3><ol>
+<li><strong>解释执行</strong>：逐条解释执行字节码指令。</li>
+<li><strong>即时编译（JIT）</strong>：将热点代码编译为本地机器码，并缓存以提高执行效率。</li>
+</ol>
+<h3 id="主方法执行"><a href="#主方法执行" class="headerlink" title="主方法执行"></a>主方法执行</h3><ul>
+<li>静态代码块执行完成后，JVM 会继续执行主方法（main method）。</li>
+<li>如果没有 main 方法，JVM 会报错。</li>
+</ul>
+<p>调用 main 方法时，会在内存中分配线程私有的空间，包括程序计数器和栈帧。</p>
+<h2 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h2><h3 id="堆内存分代设计"><a href="#堆内存分代设计" class="headerlink" title="堆内存分代设计"></a>堆内存分代设计</h3><p><strong>Q3: 堆内存为什么要分代设计？</strong></p>
+<p><strong>A3:</strong> 堆内存分代设计是为了提高垃圾回收的效率。根据对象的生命周期，将堆内存分为新生代和老年代。新生代中的对象大多数是短命的，垃圾回收频繁进行，而老年代中的对象相对长命，垃圾回收较少。通过分代收集，可以针对不同生命周期的对象采用不同的回收策略，从而提高整体性能。</p>
+<h3 id="对象内存分配过程"><a href="#对象内存分配过程" class="headerlink" title="对象内存分配过程"></a>对象内存分配过程</h3><ol>
+<li><strong>内存分配</strong>：在堆中为对象分配内存。</li>
+<li><strong>初始化</strong>：将对象的实例变量设置为默认值（如 0、null 等）。</li>
+<li><strong>执行构造函数</strong>：调用对象的构造函数，执行初始化逻辑。</li>
+<li><strong>返回对象引用</strong>：将对象的引用返回给调用者。</li>
+</ol>
+<h3 id="内存分配策略"><a href="#内存分配策略" class="headerlink" title="内存分配策略"></a>内存分配策略</h3><ol>
+<li><p><strong>碰撞指针法</strong>：</p>
+<ul>
+<li>通过维护一个指针来指向当前可用内存的起始位置。</li>
+<li>分配内存时，直接从指针位置分配所需大小的内存，然后更新指针位置。</li>
+<li>优点：分配速度快。</li>
+<li>缺点：容易导致内存碎片。</li>
+</ul>
+</li>
+<li><p><strong>空闲法</strong>：</p>
+<ul>
+<li>通过维护一个空闲内存列表来管理内存分配。</li>
+<li>分配内存时，遍历空闲列表找到足够大的空闲块进行分配，并更新空闲列表。</li>
+<li>优点：减少内存碎片。</li>
+<li>缺点：分配速度相对较慢。</li>
+</ul>
+</li>
+</ol>
+<h2 id="垃圾回收"><a href="#垃圾回收" class="headerlink" title="垃圾回收"></a>垃圾回收</h2><h2 id="后续流程"><a href="#后续流程" class="headerlink" title="后续流程"></a>后续流程</h2><p>实例初始化后，会将对象的引用存储到局部变量表中（虚拟机栈），线程可以通过引用访问到该对象。后续的代码会继续按照这个流程工作。</p>
 
   </div>
 </article>
@@ -227,7 +299,7 @@
     
     
       <div id="toc-footer" style="display: none">
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#JVM-%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">JVM 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JVM-%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">JVM 结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%9C%BA%E5%88%B6"><span class="toc-number">2.1.</span> <span class="toc-text">双亲委派机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F%EF%BC%9A"><span class="toc-number">2.2.</span> <span class="toc-text">加载顺序：</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#JVM-%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">JVM 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JVM-%E7%BB%93%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">JVM 结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E7%B3%BB%E7%BB%9F"><span class="toc-number">3.</span> <span class="toc-text">类加载系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%9C%BA%E5%88%B6"><span class="toc-number">3.1.</span> <span class="toc-text">双亲委派机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F"><span class="toc-number">3.2.</span> <span class="toc-text">加载顺序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B"><span class="toc-number">4.</span> <span class="toc-text">类加载过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E"><span class="toc-number">5.</span> <span class="toc-text">执行引擎</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%A8%A1%E5%BC%8F"><span class="toc-number">5.1.</span> <span class="toc-text">工作模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E6%96%B9%E6%B3%95%E6%89%A7%E8%A1%8C"><span class="toc-number">5.2.</span> <span class="toc-text">主方法执行</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc-number">6.</span> <span class="toc-text">内存管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A0%86%E5%86%85%E5%AD%98%E5%88%86%E4%BB%A3%E8%AE%BE%E8%AE%A1"><span class="toc-number">6.1.</span> <span class="toc-text">堆内存分代设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E8%BF%87%E7%A8%8B"><span class="toc-number">6.2.</span> <span class="toc-text">对象内存分配过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%AD%96%E7%95%A5"><span class="toc-number">6.3.</span> <span class="toc-text">内存分配策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6"><span class="toc-number">7.</span> <span class="toc-text">垃圾回收</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8E%E7%BB%AD%E6%B5%81%E7%A8%8B"><span class="toc-number">8.</span> <span class="toc-text">后续流程</span></a></li></ol>
       </div>
     
 
