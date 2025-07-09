@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="1. 背景问题报表查询的常见痛点 时间范围查询慢：WHERE create_time BETWEEN &#39;2024-01-01&#39; AND &#39;2024-01-31&#39; 深度分页性能差：LIMIT 100000, 20 复杂聚合查询耗时：多维度统计和GROUP BY 索引选择不优：时间字段索引效率不如主键索引  2. 雪花算法ID优化方案2.1 雪花算法ID的特性 时间递增">
+<meta property="og:type" content="article">
+<meta property="og:title" content="bi优化-notes">
+<meta property="og:url" content="http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/index.html">
+<meta property="og:site_name" content="SC&#39;s Blog">
+<meta property="og:description" content="1. 背景问题报表查询的常见痛点 时间范围查询慢：WHERE create_time BETWEEN &#39;2024-01-01&#39; AND &#39;2024-01-31&#39; 深度分页性能差：LIMIT 100000, 20 复杂聚合查询耗时：多维度统计和GROUP BY 索引选择不优：时间字段索引效率不如主键索引  2. 雪花算法ID优化方案2.1 雪花算法ID的特性 时间递增">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-07-09T12:39:57.000Z">
+<meta property="article:modified_time" content="2025-07-09T12:40:19.652Z">
+<meta property="article:author" content="sc">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>bi优化-notes</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="下一篇" href="/2025/06/30/jvm-notes/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&text=bi优化-notes"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&title=bi优化-notes"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&is_video=false&description=bi优化-notes"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=bi优化-notes&body=Check out this article: http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&title=bi优化-notes"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&title=bi优化-notes"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&title=bi优化-notes"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&title=bi优化-notes"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&name=bi优化-notes&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&t=bi优化-notes"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E8%83%8C%E6%99%AF%E9%97%AE%E9%A2%98"><span class="toc-number">1.</span> <span class="toc-text">1. 背景问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%A5%E8%A1%A8%E6%9F%A5%E8%AF%A2%E7%9A%84%E5%B8%B8%E8%A7%81%E7%97%9B%E7%82%B9"><span class="toc-number">1.1.</span> <span class="toc-text">报表查询的常见痛点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95ID%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88"><span class="toc-number">2.</span> <span class="toc-text">2. 雪花算法ID优化方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95ID%E7%9A%84%E7%89%B9%E6%80%A7"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 雪花算法ID的特性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%97%B6%E9%97%B4%E8%8C%83%E5%9B%B4%E8%BD%AC%E6%8D%A2%E4%B8%BAID%E8%8C%83%E5%9B%B4"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 时间范围转换为ID范围</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%95%B0%E6%8D%AE%E8%81%9A%E5%90%88%E7%AD%96%E7%95%A5"><span class="toc-number">3.</span> <span class="toc-text">3. 数据聚合策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%88%86%E5%B1%82%E8%81%9A%E5%90%88%E6%95%B0%E6%8D%AE%E8%A1%A8"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 分层聚合数据表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%AE%9A%E6%97%B6%E8%81%9A%E5%90%88%E4%BB%BB%E5%8A%A1"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 定时聚合任务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%95%B0%E6%8D%AE%E4%BF%9D%E7%95%99%E7%AD%96%E7%95%A5"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 数据保留策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%99%BA%E8%83%BD%E6%9F%A5%E8%AF%A2%E7%AD%96%E7%95%A5"><span class="toc-number">4.</span> <span class="toc-text">4. 智能查询策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E6%9F%A5%E8%AF%A2"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 多级缓存查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%B7%B7%E5%90%88%E6%9F%A5%E8%AF%A2%E7%AD%96%E7%95%A5"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 混合查询策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%A4%A7%E6%95%B0%E6%8D%AE%E9%87%8F%E5%A4%84%E7%90%86%E4%BC%98%E5%8C%96"><span class="toc-number">5.</span> <span class="toc-text">5. 大数据量处理优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%88%86%E6%AE%B5%E6%9F%A5%E8%AF%A2"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 分段查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%B5%81%E5%BC%8F%E5%A4%84%E7%90%86"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 流式处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E5%BC%82%E6%AD%A5%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88"><span class="toc-number">6.</span> <span class="toc-text">6. 异步处理方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%A4%A7%E6%8A%A5%E8%A1%A8%E5%BC%82%E6%AD%A5%E5%A4%84%E7%90%86"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 大报表异步处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E9%85%8D%E7%BD%AE%E5%8C%96%E7%AE%A1%E7%90%86"><span class="toc-number">7.</span> <span class="toc-text">7. 配置化管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E6%8A%A5%E8%A1%A8%E9%85%8D%E7%BD%AE"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 报表配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E9%85%8D%E7%BD%AE%E7%B1%BB"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 配置类</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E6%80%A7%E8%83%BD%E6%8F%90%E5%8D%87%E6%95%88%E6%9E%9C"><span class="toc-number">8.</span> <span class="toc-text">8. 性能提升效果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 查询性能优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E5%AD%98%E5%82%A8%E4%BC%98%E5%8C%96"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 存储优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E7%B3%BB%E7%BB%9F%E8%B4%9F%E8%BD%BD%E4%BC%98%E5%8C%96"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 系统负载优化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E5%AE%9E%E6%96%BD%E5%BB%BA%E8%AE%AE"><span class="toc-number">9.</span> <span class="toc-text">9. 实施建议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E4%BC%98%E5%85%88%E7%BA%A7%E9%A1%BA%E5%BA%8F"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 优先级顺序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E7%9B%91%E6%8E%A7%E6%8C%87%E6%A0%87"><span class="toc-number">9.2.</span> <span class="toc-text">9.2 监控指标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">9.3.</span> <span class="toc-text">9.3 注意事项</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E6%80%BB%E7%BB%93"><span class="toc-number">10.</span> <span class="toc-text">10. 总结</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        bi优化-notes
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">sc</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2025-07-09T12:39:57.000Z" class="dt-published" itemprop="datePublished">2025-07-09</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="1-背景问题"><a href="#1-背景问题" class="headerlink" title="1. 背景问题"></a>1. 背景问题</h2><h3 id="报表查询的常见痛点"><a href="#报表查询的常见痛点" class="headerlink" title="报表查询的常见痛点"></a>报表查询的常见痛点</h3><ul>
+<li><strong>时间范围查询慢</strong>：<code>WHERE create_time BETWEEN &#39;2024-01-01&#39; AND &#39;2024-01-31&#39;</code></li>
+<li><strong>深度分页性能差</strong>：<code>LIMIT 100000, 20</code></li>
+<li><strong>复杂聚合查询耗时</strong>：多维度统计和GROUP BY</li>
+<li><strong>索引选择不优</strong>：时间字段索引效率不如主键索引</li>
+</ul>
+<h2 id="2-雪花算法ID优化方案"><a href="#2-雪花算法ID优化方案" class="headerlink" title="2. 雪花算法ID优化方案"></a>2. 雪花算法ID优化方案</h2><h3 id="2-1-雪花算法ID的特性"><a href="#2-1-雪花算法ID的特性" class="headerlink" title="2.1 雪花算法ID的特性"></a>2.1 雪花算法ID的特性</h3><ul>
+<li><strong>时间递增性</strong>：包含时间戳信息，相近时间的ID数值相近</li>
+<li><strong>范围查询友好</strong>：可以通过ID范围快速定位特定时间段的数据</li>
+<li><strong>主键索引优势</strong>：基于主键索引，查询效率更高</li>
+</ul>
+<h3 id="2-2-时间范围转换为ID范围"><a href="#2-2-时间范围转换为ID范围" class="headerlink" title="2.2 时间范围转换为ID范围"></a>2.2 时间范围转换为ID范围</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 时间转换为雪花ID（估算）</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">long</span> <span class="title function_">timeToSnowflakeId</span><span class="params">(LocalDateTime dateTime)</span> &#123;</span><br><span class="line">    <span class="type">long</span> <span class="variable">timestamp</span> <span class="operator">=</span> dateTime.toInstant(ZoneOffset.of(<span class="string">&quot;+8&quot;</span>)).toEpochMilli();</span><br><span class="line">    <span class="type">long</span> <span class="variable">epoch</span> <span class="operator">=</span> <span class="number">1288834974657L</span>; <span class="comment">// 雪花算法的epoch时间</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">snowflakeTimestamp</span> <span class="operator">=</span> timestamp - epoch;</span><br><span class="line">    <span class="keyword">return</span> snowflakeTimestamp &lt;&lt; <span class="number">22</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 按月份统计订单数据（使用ID范围优化）</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> OrderMonthlyReport <span class="title function_">getMonthlyReport</span><span class="params">(<span class="type">int</span> year, <span class="type">int</span> month)</span> &#123;</span><br><span class="line">    <span class="type">LocalDateTime</span> <span class="variable">startTime</span> <span class="operator">=</span> LocalDateTime.of(year, month, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="type">LocalDateTime</span> <span class="variable">endTime</span> <span class="operator">=</span> startTime.plusMonths(<span class="number">1</span>).minusSeconds(<span class="number">1</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 转换为雪花ID范围</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">startId</span> <span class="operator">=</span> timeToSnowflakeId(startTime);</span><br><span class="line">    <span class="type">long</span> <span class="variable">endId</span> <span class="operator">=</span> timeToSnowflakeId(endTime);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 使用ID范围查询（比时间范围查询更快）</span></span><br><span class="line">    List&lt;OrderInfo&gt; orders = orderInfoMapper.selectByIdRange(startId, endId);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> aggregateOrderData(orders);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-数据聚合策略"><a href="#3-数据聚合策略" class="headerlink" title="3. 数据聚合策略"></a>3. 数据聚合策略</h2><h3 id="3-1-分层聚合数据表"><a href="#3-1-分层聚合数据表" class="headerlink" title="3.1 分层聚合数据表"></a>3.1 分层聚合数据表</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- 日报表（daily_report）：保留最近3个月</span><br><span class="line">- 月报表（monthly_report）：保留最近2年  </span><br><span class="line">- 年报表（yearly_report）：永久保留</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-定时聚合任务"><a href="#3-2-定时聚合任务" class="headerlink" title="3.2 定时聚合任务"></a>3.2 定时聚合任务</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReportAggregator</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Scheduled(cron = &quot;0 0 1 * * ?&quot;)</span> <span class="comment">// 每天凌晨1点执行</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">aggregateDailyReport</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">LocalDate</span> <span class="variable">yesterday</span> <span class="operator">=</span> LocalDate.now().minusDays(<span class="number">1</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 检查是否已经存在该日期的报表</span></span><br><span class="line">        <span class="type">DailyReport</span> <span class="variable">existingReport</span> <span class="operator">=</span> dailyReportMapper.selectByDate(yesterday);</span><br><span class="line">        <span class="keyword">if</span> (existingReport != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 使用雪花ID范围聚合数据</span></span><br><span class="line">        <span class="type">long</span> <span class="variable">startId</span> <span class="operator">=</span> timeToSnowflakeId(yesterday.atStartOfDay());</span><br><span class="line">        <span class="type">long</span> <span class="variable">endId</span> <span class="operator">=</span> timeToSnowflakeId(yesterday.plusDays(<span class="number">1</span>).atStartOfDay());</span><br><span class="line">        </span><br><span class="line">        List&lt;OrderInfo&gt; orders = orderInfoMapper.selectByIdRange(startId, endId);</span><br><span class="line">        <span class="type">DailyReport</span> <span class="variable">report</span> <span class="operator">=</span> aggregateAndSave(orders, yesterday);</span><br><span class="line">        </span><br><span class="line">        dailyReportMapper.insert(report);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-数据保留策略"><a href="#3-3-数据保留策略" class="headerlink" title="3.3 数据保留策略"></a>3.3 数据保留策略</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Scheduled(cron = &quot;0 0 2 * * ?&quot;)</span> <span class="comment">// 每天凌晨2点清理</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">cleanupExpiredData</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 清理日报表（保留90天）</span></span><br><span class="line">    <span class="type">LocalDate</span> <span class="variable">cutoff</span> <span class="operator">=</span> LocalDate.now().minusDays(<span class="number">90</span>);</span><br><span class="line">    dailyReportMapper.deleteByDateBefore(cutoff);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 清理月报表（保留24个月）</span></span><br><span class="line">    <span class="type">LocalDate</span> <span class="variable">monthlyCutoff</span> <span class="operator">=</span> LocalDate.now().minusMonths(<span class="number">24</span>);</span><br><span class="line">    monthlyReportMapper.deleteByDateBefore(monthlyCutoff);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-智能查询策略"><a href="#4-智能查询策略" class="headerlink" title="4. 智能查询策略"></a>4. 智能查询策略</h2><h3 id="4-1-多级缓存查询"><a href="#4-1-多级缓存查询" class="headerlink" title="4.1 多级缓存查询"></a>4.1 多级缓存查询</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> OrderReport <span class="title function_">getOrderReport</span><span class="params">(LocalDate startDate, LocalDate endDate)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">cacheKey</span> <span class="operator">=</span> buildCacheKey(startDate, endDate);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 1. 先查 Redis 缓存</span></span><br><span class="line">    <span class="type">OrderReport</span> <span class="variable">cachedReport</span> <span class="operator">=</span> (OrderReport) redisTemplate.opsForValue().get(cacheKey);</span><br><span class="line">    <span class="keyword">if</span> (cachedReport != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> cachedReport;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 查询聚合表</span></span><br><span class="line">    <span class="type">OrderReport</span> <span class="variable">report</span> <span class="operator">=</span> getReportFromAggregateTable(startDate, endDate);</span><br><span class="line">    <span class="keyword">if</span> (report != <span class="literal">null</span>) &#123;</span><br><span class="line">        redisTemplate.opsForValue().set(cacheKey, report, Duration.ofHours(<span class="number">1</span>));</span><br><span class="line">        <span class="keyword">return</span> report;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 实时计算</span></span><br><span class="line">    report = calculateRealTimeReport(startDate, endDate);</span><br><span class="line">    redisTemplate.opsForValue().set(cacheKey, report, Duration.ofMinutes(<span class="number">10</span>));</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> report;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-混合查询策略"><a href="#4-2-混合查询策略" class="headerlink" title="4.2 混合查询策略"></a>4.2 混合查询策略</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 智能查询：优先查聚合表，缺失数据实时计算</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> OrderReport <span class="title function_">getOrderReport</span><span class="params">(LocalDate startDate, LocalDate endDate)</span> &#123;</span><br><span class="line">    <span class="comment">// 1. 查询日报表</span></span><br><span class="line">    List&lt;DailyReport&gt; dailyReports = dailyReportMapper.selectByDateRange(startDate, endDate);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 检查数据完整性</span></span><br><span class="line">    Set&lt;LocalDate&gt; existingDates = dailyReports.stream()</span><br><span class="line">            .map(DailyReport::getReportDate)</span><br><span class="line">            .collect(Collectors.toSet());</span><br><span class="line">    </span><br><span class="line">    List&lt;LocalDate&gt; missingDates = getAllDatesBetween(startDate, endDate)</span><br><span class="line">            .stream()</span><br><span class="line">            .filter(date -&gt; !existingDates.contains(date))</span><br><span class="line">            .collect(Collectors.toList());</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (missingDates.isEmpty()) &#123;</span><br><span class="line">        <span class="comment">// 数据完整，直接聚合</span></span><br><span class="line">        <span class="keyword">return</span> aggregateFromDailyReports(dailyReports);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 补充缺失数据</span></span><br><span class="line">        <span class="keyword">return</span> supplementMissingData(dailyReports, missingDates);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-大数据量处理优化"><a href="#5-大数据量处理优化" class="headerlink" title="5. 大数据量处理优化"></a>5. 大数据量处理优化</h2><h3 id="5-1-分段查询"><a href="#5-1-分段查询" class="headerlink" title="5.1 分段查询"></a>5.1 分段查询</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 分段查询大数据量报表（避免内存溢出）</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> List&lt;OrderDailyReport&gt; <span class="title function_">getDailyReportBySegment</span><span class="params">(LocalDate startDate, LocalDate endDate)</span> &#123;</span><br><span class="line">    List&lt;OrderDailyReport&gt; reports = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 按天分段查询</span></span><br><span class="line">    <span class="type">LocalDate</span> <span class="variable">currentDate</span> <span class="operator">=</span> startDate;</span><br><span class="line">    <span class="keyword">while</span> (!currentDate.isAfter(endDate)) &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">startId</span> <span class="operator">=</span> timeToSnowflakeId(currentDate.atStartOfDay());</span><br><span class="line">        <span class="type">long</span> <span class="variable">endId</span> <span class="operator">=</span> timeToSnowflakeId(currentDate.plusDays(<span class="number">1</span>).atStartOfDay());</span><br><span class="line">        </span><br><span class="line">        List&lt;OrderInfo&gt; dayOrders = orderInfoMapper.selectByIdRange(startId, endId);</span><br><span class="line">        <span class="type">OrderDailyReport</span> <span class="variable">dayReport</span> <span class="operator">=</span> aggregateDayData(dayOrders, currentDate);</span><br><span class="line">        reports.add(dayReport);</span><br><span class="line">        </span><br><span class="line">        currentDate = currentDate.plusDays(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> reports;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-流式处理"><a href="#5-2-流式处理" class="headerlink" title="5.2 流式处理"></a>5.2 流式处理</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 流式处理大数据量报表</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">processLargeReport</span><span class="params">(ReportRequest request)</span> &#123;</span><br><span class="line">    <span class="type">long</span> <span class="variable">startId</span> <span class="operator">=</span> timeToSnowflakeId(request.getStartTime());</span><br><span class="line">    <span class="type">long</span> <span class="variable">endId</span> <span class="operator">=</span> timeToSnowflakeId(request.getEndTime());</span><br><span class="line">    </span><br><span class="line">    <span class="type">long</span> <span class="variable">batchSize</span> <span class="operator">=</span> <span class="number">10000</span>;</span><br><span class="line">    <span class="type">long</span> <span class="variable">currentId</span> <span class="operator">=</span> startId;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span> (currentId &lt; endId) &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">nextId</span> <span class="operator">=</span> Math.min(currentId + batchSize, endId);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 批量查询</span></span><br><span class="line">        List&lt;OrderInfo&gt; batch = orderInfoMapper.selectByIdRange(currentId, nextId);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 流式处理</span></span><br><span class="line">        processReportBatch(batch);</span><br><span class="line">        </span><br><span class="line">        currentId = nextId + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-异步处理方案"><a href="#6-异步处理方案" class="headerlink" title="6. 异步处理方案"></a>6. 异步处理方案</h2><h3 id="6-1-大报表异步处理"><a href="#6-1-大报表异步处理" class="headerlink" title="6.1 大报表异步处理"></a>6.1 大报表异步处理</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/report&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReportController</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@GetMapping(&quot;/orders&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Result&lt;OrderReport&gt; <span class="title function_">getOrderReport</span><span class="params">(</span></span><br><span class="line"><span class="params">            <span class="meta">@RequestParam</span> LocalDate startDate,</span></span><br><span class="line"><span class="params">            <span class="meta">@RequestParam</span> LocalDate endDate)</span> &#123;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 大数据量报表异步处理</span></span><br><span class="line">        <span class="keyword">if</span> (ChronoUnit.DAYS.between(startDate, endDate) &gt; <span class="number">30</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> processLargeReportAsync(startDate, endDate);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 小数据量报表同步处理</span></span><br><span class="line">        <span class="type">OrderReport</span> <span class="variable">report</span> <span class="operator">=</span> reportService.getOrderReportByIdRange(startDate, endDate);</span><br><span class="line">        <span class="keyword">return</span> Result.success(report);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> Result&lt;OrderReport&gt; <span class="title function_">processLargeReportAsync</span><span class="params">(LocalDate startDate, LocalDate endDate)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">taskId</span> <span class="operator">=</span> UUID.randomUUID().toString();</span><br><span class="line">        reportService.submitAsyncReportTask(taskId, startDate, endDate);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> Result.success(<span class="string">&quot;报表生成中，任务ID: &quot;</span> + taskId);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-配置化管理"><a href="#7-配置化管理" class="headerlink" title="7. 配置化管理"></a>7. 配置化管理</h2><h3 id="7-1-报表配置"><a href="#7-1-报表配置" class="headerlink" title="7.1 报表配置"></a>7.1 报表配置</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># application.yml</span></span><br><span class="line"><span class="attr">report:</span></span><br><span class="line">  <span class="attr">retention:</span></span><br><span class="line">    <span class="attr">daily:</span></span><br><span class="line">      <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">      <span class="attr">days:</span> <span class="number">90</span>  <span class="comment"># 日报表保留90天</span></span><br><span class="line">    <span class="attr">monthly:</span></span><br><span class="line">      <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">      <span class="attr">months:</span> <span class="number">24</span>  <span class="comment"># 月报表保留24个月</span></span><br><span class="line">    <span class="attr">yearly:</span></span><br><span class="line">      <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">      <span class="attr">years:</span> <span class="number">-1</span>  <span class="comment"># 年报表永久保留</span></span><br><span class="line">  </span><br><span class="line">  <span class="attr">cleanup:</span></span><br><span class="line">    <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">schedule:</span> <span class="string">&quot;0 0 2 * * ?&quot;</span>  <span class="comment"># 每天凌晨2点清理</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-配置类"><a href="#7-2-配置类" class="headerlink" title="7.2 配置类"></a>7.2 配置类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@ConfigurationProperties(prefix = &quot;report&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReportRetentionConfig</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> Retention retention;</span><br><span class="line">    <span class="keyword">private</span> Cleanup cleanup;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Data</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Retention</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> Daily daily;</span><br><span class="line">        <span class="keyword">private</span> Monthly monthly;</span><br><span class="line">        <span class="keyword">private</span> Yearly yearly;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Data</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Daily</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="type">boolean</span> enabled;</span><br><span class="line">        <span class="keyword">private</span> <span class="type">int</span> days;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="8-性能提升效果"><a href="#8-性能提升效果" class="headerlink" title="8. 性能提升效果"></a>8. 性能提升效果</h2><h3 id="8-1-查询性能优化"><a href="#8-1-查询性能优化" class="headerlink" title="8.1 查询性能优化"></a>8.1 查询性能优化</h3><ul>
+<li><strong>主键索引优势</strong>：比时间字段索引更高效</li>
+<li><strong>避免全表扫描</strong>：ID范围查询能更好地利用索引</li>
+<li><strong>减少锁竞争</strong>：按ID范围查询减少了锁的竞争</li>
+<li><strong>支持分页优化</strong>：避免深度分页的性能问题</li>
+</ul>
+<h3 id="8-2-存储优化"><a href="#8-2-存储优化" class="headerlink" title="8.2 存储优化"></a>8.2 存储优化</h3><ul>
+<li><strong>分层存储</strong>：不同精度的数据分别存储</li>
+<li><strong>定期清理</strong>：避免数据无限膨胀</li>
+<li><strong>压缩比例</strong>：聚合数据大幅减少存储空间</li>
+</ul>
+<h3 id="8-3-系统负载优化"><a href="#8-3-系统负载优化" class="headerlink" title="8.3 系统负载优化"></a>8.3 系统负载优化</h3><ul>
+<li><strong>缓存命中率提升</strong>：热点数据缓存</li>
+<li><strong>数据库压力减轻</strong>：减少实时计算</li>
+<li><strong>响应时间优化</strong>：多级查询策略</li>
+</ul>
+<h2 id="9-实施建议"><a href="#9-实施建议" class="headerlink" title="9. 实施建议"></a>9. 实施建议</h2><h3 id="9-1-优先级顺序"><a href="#9-1-优先级顺序" class="headerlink" title="9.1 优先级顺序"></a>9.1 优先级顺序</h3><ol>
+<li><strong>Redis缓存</strong> → <strong>聚合表</strong> → <strong>实时计算</strong></li>
+<li><strong>数据完整性检查</strong>：检查聚合表中是否有完整的数据</li>
+<li><strong>部分数据缺失</strong>：采用混合查询策略</li>
+<li><strong>灵活降级</strong>：支持实时数据补充</li>
+</ol>
+<h3 id="9-2-监控指标"><a href="#9-2-监控指标" class="headerlink" title="9.2 监控指标"></a>9.2 监控指标</h3><ul>
+<li><strong>查询响应时间</strong></li>
+<li><strong>缓存命中率</strong></li>
+<li><strong>聚合任务执行情况</strong></li>
+<li><strong>数据完整性检查</strong></li>
+</ul>
+<h3 id="9-3-注意事项"><a href="#9-3-注意事项" class="headerlink" title="9.3 注意事项"></a>9.3 注意事项</h3><ul>
+<li><strong>时间估算精度</strong>：雪花ID时间估算可能有误差</li>
+<li><strong>数据一致性</strong>：确保聚合数据与原始数据一致</li>
+<li><strong>异常处理</strong>：聚合任务失败时的处理机制</li>
+<li><strong>容量规划</strong>：根据业务量合理规划存储和清理策略</li>
+</ul>
+<h2 id="10-总结"><a href="#10-总结" class="headerlink" title="10. 总结"></a>10. 总结</h2><p>通过基于雪花算法ID的报表优化方案，可以：</p>
+<ul>
+<li><strong>显著提升查询性能</strong>：利用主键索引和范围查询</li>
+<li><strong>减少系统负载</strong>：通过分层聚合和缓存策略</li>
+<li><strong>提高可维护性</strong>：配置化管理和异步处理</li>
+<li><strong>保证数据准确性</strong>：混合查询策略和数据完整性检查</li>
+</ul>
+<p>这种方案特别适合于大数据量的报表查询场景，能够有效解决传统时间范围查询的性能瓶颈问题。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E8%83%8C%E6%99%AF%E9%97%AE%E9%A2%98"><span class="toc-number">1.</span> <span class="toc-text">1. 背景问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%A5%E8%A1%A8%E6%9F%A5%E8%AF%A2%E7%9A%84%E5%B8%B8%E8%A7%81%E7%97%9B%E7%82%B9"><span class="toc-number">1.1.</span> <span class="toc-text">报表查询的常见痛点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95ID%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88"><span class="toc-number">2.</span> <span class="toc-text">2. 雪花算法ID优化方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95ID%E7%9A%84%E7%89%B9%E6%80%A7"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 雪花算法ID的特性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%97%B6%E9%97%B4%E8%8C%83%E5%9B%B4%E8%BD%AC%E6%8D%A2%E4%B8%BAID%E8%8C%83%E5%9B%B4"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 时间范围转换为ID范围</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%95%B0%E6%8D%AE%E8%81%9A%E5%90%88%E7%AD%96%E7%95%A5"><span class="toc-number">3.</span> <span class="toc-text">3. 数据聚合策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%88%86%E5%B1%82%E8%81%9A%E5%90%88%E6%95%B0%E6%8D%AE%E8%A1%A8"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 分层聚合数据表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%AE%9A%E6%97%B6%E8%81%9A%E5%90%88%E4%BB%BB%E5%8A%A1"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 定时聚合任务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%95%B0%E6%8D%AE%E4%BF%9D%E7%95%99%E7%AD%96%E7%95%A5"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 数据保留策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%99%BA%E8%83%BD%E6%9F%A5%E8%AF%A2%E7%AD%96%E7%95%A5"><span class="toc-number">4.</span> <span class="toc-text">4. 智能查询策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E6%9F%A5%E8%AF%A2"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 多级缓存查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%B7%B7%E5%90%88%E6%9F%A5%E8%AF%A2%E7%AD%96%E7%95%A5"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 混合查询策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%A4%A7%E6%95%B0%E6%8D%AE%E9%87%8F%E5%A4%84%E7%90%86%E4%BC%98%E5%8C%96"><span class="toc-number">5.</span> <span class="toc-text">5. 大数据量处理优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%88%86%E6%AE%B5%E6%9F%A5%E8%AF%A2"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 分段查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%B5%81%E5%BC%8F%E5%A4%84%E7%90%86"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 流式处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E5%BC%82%E6%AD%A5%E5%A4%84%E7%90%86%E6%96%B9%E6%A1%88"><span class="toc-number">6.</span> <span class="toc-text">6. 异步处理方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%A4%A7%E6%8A%A5%E8%A1%A8%E5%BC%82%E6%AD%A5%E5%A4%84%E7%90%86"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 大报表异步处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E9%85%8D%E7%BD%AE%E5%8C%96%E7%AE%A1%E7%90%86"><span class="toc-number">7.</span> <span class="toc-text">7. 配置化管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E6%8A%A5%E8%A1%A8%E9%85%8D%E7%BD%AE"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 报表配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E9%85%8D%E7%BD%AE%E7%B1%BB"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 配置类</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E6%80%A7%E8%83%BD%E6%8F%90%E5%8D%87%E6%95%88%E6%9E%9C"><span class="toc-number">8.</span> <span class="toc-text">8. 性能提升效果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 查询性能优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E5%AD%98%E5%82%A8%E4%BC%98%E5%8C%96"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 存储优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E7%B3%BB%E7%BB%9F%E8%B4%9F%E8%BD%BD%E4%BC%98%E5%8C%96"><span class="toc-number">8.3.</span> <span class="toc-text">8.3 系统负载优化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E5%AE%9E%E6%96%BD%E5%BB%BA%E8%AE%AE"><span class="toc-number">9.</span> <span class="toc-text">9. 实施建议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E4%BC%98%E5%85%88%E7%BA%A7%E9%A1%BA%E5%BA%8F"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 优先级顺序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E7%9B%91%E6%8E%A7%E6%8C%87%E6%A0%87"><span class="toc-number">9.2.</span> <span class="toc-text">9.2 监控指标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">9.3.</span> <span class="toc-text">9.3 注意事项</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E6%80%BB%E7%BB%93"><span class="toc-number">10.</span> <span class="toc-text">10. 总结</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&text=bi优化-notes"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&title=bi优化-notes"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&is_video=false&description=bi优化-notes"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=bi优化-notes&body=Check out this article: http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&title=bi优化-notes"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&title=bi优化-notes"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&title=bi优化-notes"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&title=bi优化-notes"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&name=bi优化-notes&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2025/07/09/bi%E4%BC%98%E5%8C%96-notes/&t=bi优化-notes"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2025
+    sc
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+
+
+  <script src='https://unpkg.com/mermaid@8.13.5/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({theme: 'default', 
+                          startOnLoad: true,
+                          themeVariables: {
+                            fontSize: '16px',
+                            nodeSpacing: 50,
+                            edgeLength: 100
+                          }
+      });
+    }
+  </script>
+
+</body>
+</html>
