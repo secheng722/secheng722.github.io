@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="redis缓存三兄弟 为什么“击穿”会有危害？（以周杰伦为例）  想象一下，周杰伦要开演唱会，大家都去刷票： - 正常情况（有缓存）：大家先去“公告栏”（Redis）看有没有票。公告栏写着“有票”，大家看了就走，不去骚扰“售票员”（数据库）。售票员很清闲，在喝咖啡。 - 击穿瞬间（缓存过期）：突然，公告栏的纸掉地上了（Redis 键过期了）。 - 灾难发生：就在这一秒，10万个粉丝发现公告栏没写票">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis">
+<meta property="og:url" content="http://example.com/2026/03/30/redis/index.html">
+<meta property="og:site_name" content="SC&#39;s Blog">
+<meta property="og:description" content="redis缓存三兄弟 为什么“击穿”会有危害？（以周杰伦为例）  想象一下，周杰伦要开演唱会，大家都去刷票： - 正常情况（有缓存）：大家先去“公告栏”（Redis）看有没有票。公告栏写着“有票”，大家看了就走，不去骚扰“售票员”（数据库）。售票员很清闲，在喝咖啡。 - 击穿瞬间（缓存过期）：突然，公告栏的纸掉地上了（Redis 键过期了）。 - 灾难发生：就在这一秒，10万个粉丝发现公告栏没写票">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-03-30T08:50:46.000Z">
+<meta property="article:modified_time" content="2026-03-30T08:50:54.267Z">
+<meta property="article:author" content="sc">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>redis</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="下一篇" href="/2026/03/30/MYSQL-LEARN/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2026/03/30/redis/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2026/03/30/redis/&text=redis"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2026/03/30/redis/&title=redis"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2026/03/30/redis/&is_video=false&description=redis"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=redis&body=Check out this article: http://example.com/2026/03/30/redis/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2026/03/30/redis/&title=redis"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2026/03/30/redis/&title=redis"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2026/03/30/redis/&title=redis"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2026/03/30/redis/&title=redis"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2026/03/30/redis/&name=redis&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2026/03/30/redis/&t=redis"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#redis"><span class="toc-number">1.</span> <span class="toc-text">redis</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E4%B8%89%E5%85%84%E5%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">缓存三兄弟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%AB%98%E9%A2%91%E5%A4%BA%E5%91%BD3%E9%A2%98"><span class="toc-number">1.2.</span> <span class="toc-text">高频夺命3题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E9%97%AE"><span class="toc-number">1.3.</span> <span class="toc-text">提问</span></a></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        redis
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">sc</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2026-03-30T08:50:46.000Z" class="dt-published" itemprop="datePublished">2026-03-30</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="redis"><a href="#redis" class="headerlink" title="redis"></a>redis</h2><h3 id="缓存三兄弟"><a href="#缓存三兄弟" class="headerlink" title="缓存三兄弟"></a>缓存三兄弟</h3><ol>
+<li>为什么“击穿”会有危害？（以周杰伦为例）</li>
+</ol>
+<p>想象一下，周杰伦要开演唱会，大家都去刷票：</p>
+<pre><code>- 正常情况（有缓存）：大家先去“公告栏”（Redis）看有没有票。公告栏写着“有票”，大家看了就走，不去骚扰“售票员”（数据库）。售票员很清闲，在喝咖啡。
+- 击穿瞬间（缓存过期）：突然，公告栏的纸掉地上了（Redis 键过期了）。
+- 灾难发生：就在这一秒，10万个粉丝发现公告栏没写票数，于是全部涌向“售票厅”问那个售票员：“还有票吗？”
+- 后果：售票员只有两只手，10万个人同时挤过来，售票厅的门被挤烂了，售票员当场晕倒（数据库 CPU 飙升到 100%，连接池爆满，直接挂掉）。
+</code></pre>
+<p>结论： 危害不在于“没票”，而在于瞬间涌入的巨大流量，会把脆弱的数据库直接打瘫痪。</p>
+<ol start="2">
+<li>为什么“穿透”会有危害？（以“捣乱分子”为例）</li>
+</ol>
+<p>你可能会问：查一个不存在的 ID，数据库返回“空”不就行了？</p>
+<pre><code>- 场景：有个黑客写了个脚本，每秒钟发 1万个请求查 ID = -999 的用户。
+- 危害：
+    1. 缓存拦不住：Redis 发现没这个 ID，只能放行。
+    2. 数据库白干活：数据库每次都要去磁盘里搜半天，最后告诉你“查无此人”。
+    3. 结果：数据库一直在做无用功，正常的业务请求反而进不来了。就像有个骚扰电话一直打，你真正重要的电话就接不进来了。
+</code></pre>
+<ol start="3">
+<li>为什么“雪崩”最致命？（以“商场停电”为例）</li>
+</ol>
+<ul>
+<li><p>场景：你给所有的商品缓存都设置了“1小时过期”。</p>
+</li>
+<li><p>雪崩发生：1小时到了，商场里所有的柜台（所有的 Key）同时撤柜。</p>
+</li>
+<li><p>危害：</p>
+<ol>
+<li>原本 Redis 能挡住 99% 的压力，现在 100% 的压力全部转给数据库。</li>
+<li>数据库就像一个本来只管收银的会计，突然要负责全商场成千上万种商品的导购、理货、收银。</li>
+<li>连锁反应：数据库一挂，依赖数据库的订单系统、支付系统、物流系统全部跟着挂掉。整个公司的业务停摆。</li>
+</ol>
+</li>
+</ul>
+<blockquote>
+<p>💡 总结面试“得分点”：</p>
+</blockquote>
+<p>如果面试官问你危害，你就答这三句话：</p>
+<pre><code>1. 击穿：会导致热点数据失效瞬间，海量请求冲击数据库，造成单点崩溃。
+2. 穿透：会导致数据库被无效请求频繁骚扰，白白消耗资源，影响正常业务。
+3. 雪崩：会导致大规模数据同时失效，引发系统级灾难，甚至导致整个后端服务链条瘫痪。
+</code></pre>
+<p>核心逻辑： 缓存的存在是为了保护数据库。任何让保护罩消失的行为，都是在让数据库“裸奔”。</p>
+<h3 id="高频夺命3题"><a href="#高频夺命3题" class="headerlink" title="高频夺命3题"></a>高频夺命3题</h3><ol>
+<li>Redis 这么快，除了在内存里，还因为啥？</li>
+</ol>
+<p>面试官： “大家都说 Redis 快，是因为它单线程。为啥单线程反而快？”</p>
+<pre><code>- 保命话术：
+    1. 没有上下文切换：多线程就像几个人轮流用一台电脑，切来切去（上下文切换）很费时间。单线程就是一个人从头干到尾，省了切换开销。
+    2. 没有锁竞争：多线程改同一个数据要加锁、放锁，单线程完全不用担心“抢地盘”，直接改就行。
+    3. IO 多路复用（重点词汇）：就像一个服务员（单线程）同时管 10 桌客人的需求。哪桌菜好了他就去端，而不是死等一桌吃完才管下一桌。
+</code></pre>
+<ol start="2">
+<li>万一断电了，Redis 的数据不就全丢了吗？（持久化）</li>
+</ol>
+<p>面试官： “Redis 是内存数据库，宕机了怎么办？RDB 和 AOF 有啥区别？”</p>
+<ul>
+<li>类比理解：<ul>
+<li>RDB (快照)：就像拍照片。每隔一段时间，给全内存的数据拍张照存磁盘。<ul>
+<li>优点：恢复极快（直接看照片恢复现场）。</li>
+<li>缺点：会丢数据。如果 10 点拍照，10 点 05 分断电，这 5 分钟的数据就没了。</li>
+</ul>
+</li>
+<li>AOF (日志)：就像记账本。每执行一个写命令，就往本子上记一笔 set name jack。<ul>
+<li>优点：数据最全，基本不丢。</li>
+<li>缺点：账本（日志文件）会变得超级大，恢复的时候要重演一遍所有命令，慢得要死。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>面试得分点： 现在的主流是混合持久化（照片 + 增量日志），既快又不丢。</li>
+</ul>
+<ol start="3">
+<li>Redis 内存满了怎么办？（过期与淘汰）</li>
+</ol>
+<p>面试官： “如果你给 Key 设了过期时间，Redis 是准时准点把它删掉吗？”</p>
+<ul>
+<li>真相（并不是准时删）：<ol>
+<li>定期删除：Redis 每隔一段时间随机抽几个 Key 检查，过期了就删。就像老师抽查作业，没抽到的即便过期了也还在内存里。</li>
+<li>惰性删除（保命大招）：你查哪个 Key，Redis 才检查哪个。如果过期了，当场删掉并告诉你“没了”。</li>
+</ol>
+</li>
+<li>追问：如果过期了没被抽到，也没人查，内存爆了怎么办？<ul>
+<li>内存淘汰策略（八股核心词：LRU）：Redis 会触发“末位淘汰制”，把最近最少使用的数据给踢出去，给新数据腾位置。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>💡 你的“复习小纸条”：</p>
+</blockquote>
+<ul>
+<li>单线程快：没锁、没切换、IO多路复用。</li>
+<li>RDB vs AOF：一个是“全家福照片”，一个是“详细账本”。</li>
+<li>删过期数据：靠“抽查”和“查到才删”，实在不行就按“LRU”踢人。</li>
+</ul>
+<h3 id="提问"><a href="#提问" class="headerlink" title="提问"></a>提问</h3><hr>
+<blockquote>
+<ol>
+<li>Q: 如果我有100w个key同时设置了5分钟后过期，会出现什么问题</li>
+</ol>
+<p>   A: 第一点是可能会出现缓存雪崩的问题，大量请求冲向数据库，直接把后端瘫痪 可以在这5分钟的过期时间设置随机微调值，第二点是redis的过期扫描删除是抽一些key如果过期比例超过25%就继续抽，会导致一直抽，一直删除，又因为是单线程，会影响redis的读写性能，导致程序变慢</p>
+</blockquote>
+<hr>
+<blockquote>
+<ol start="2">
+<li>redis中有哪些数据结构</li>
+</ol>
+<p>string hash list set sortedset<br>string 存简单值 hash 键值对存对象 list存队列 set去重 sortedset做排行榜</p>
+</blockquote>
+<hr>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#redis"><span class="toc-number">1.</span> <span class="toc-text">redis</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E4%B8%89%E5%85%84%E5%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">缓存三兄弟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%AB%98%E9%A2%91%E5%A4%BA%E5%91%BD3%E9%A2%98"><span class="toc-number">1.2.</span> <span class="toc-text">高频夺命3题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E9%97%AE"><span class="toc-number">1.3.</span> <span class="toc-text">提问</span></a></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2026/03/30/redis/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2026/03/30/redis/&text=redis"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2026/03/30/redis/&title=redis"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2026/03/30/redis/&is_video=false&description=redis"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=redis&body=Check out this article: http://example.com/2026/03/30/redis/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2026/03/30/redis/&title=redis"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2026/03/30/redis/&title=redis"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2026/03/30/redis/&title=redis"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2026/03/30/redis/&title=redis"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2026/03/30/redis/&name=redis&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2026/03/30/redis/&t=redis"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2026
+    sc
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+
+
+  <script src='https://unpkg.com/mermaid@8.13.5/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({theme: 'default', 
+                          startOnLoad: true,
+                          themeVariables: {
+                            fontSize: '16px',
+                            nodeSpacing: 50,
+                            edgeLength: 100
+                          }
+      });
+    }
+  </script>
+
+</body>
+</html>
