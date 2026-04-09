@@ -14,7 +14,7 @@
 <meta property="og:description" content="java 集合八股文Collection接口ArrayList 底层数组 增删慢 查询快 LinkedList 底层链表 增删快 查询慢 Map接口put方法HashMap 的 put 流程其实是一个先扰动、后寻址、最后解决冲突的过程。 首先，通过高 16 位异或进行 Hash 扰动，让分布更均匀。 接着，利用 (n-1) &amp; hash 快速定位桶下标。 插入时，如果是新坑直接占领；如果是">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-03-30T07:42:36.000Z">
-<meta property="article:modified_time" content="2026-03-30T07:42:56.040Z">
+<meta property="article:modified_time" content="2026-04-09T02:56:02.136Z">
 <meta property="article:author" content="sc">
 <meta name="twitter:card" content="summary">
     
@@ -112,7 +112,7 @@
     
     
       <div id="toc">
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#java-%E9%9B%86%E5%90%88%E5%85%AB%E8%82%A1%E6%96%87"><span class="toc-number">1.</span> <span class="toc-text">java 集合八股文</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Collection%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.1.</span> <span class="toc-text">Collection接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Map%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.2.</span> <span class="toc-text">Map接口</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#put%E6%96%B9%E6%B3%95"><span class="toc-number">1.2.1.</span> <span class="toc-text">put方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BD%AC%E5%8F%98%E8%A7%84%E5%88%99"><span class="toc-number">1.2.2.</span> <span class="toc-text">转变规则</span></a></li></ol></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#java-%E9%9B%86%E5%90%88%E5%85%AB%E8%82%A1%E6%96%87"><span class="toc-number">1.</span> <span class="toc-text">java 集合八股文</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Collection%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.1.</span> <span class="toc-text">Collection接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Map%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.2.</span> <span class="toc-text">Map接口</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#put%E6%96%B9%E6%B3%95"><span class="toc-number">1.2.1.</span> <span class="toc-text">put方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BD%AC%E5%8F%98%E8%A7%84%E5%88%99"><span class="toc-number">1.2.2.</span> <span class="toc-text">转变规则</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ConCurrentHashMap%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.3.</span> <span class="toc-text">ConCurrentHashMap接口</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#put%E6%96%B9%E6%B3%95-1"><span class="toc-number">1.3.1.</span> <span class="toc-text">put方法</span></a></li></ol></li></ol></li></ol>
       </div>
     
   </span>
@@ -160,6 +160,19 @@
 <p>插入时，如果是新坑直接占领；如果是旧人（Key 相同）则覆盖；如果是碰撞，就看是树还是链表。链表用尾插法，超过 8 个且数组长度大于64就转红黑树。</p>
 <p>最后，如果 size 超过了阈值，就进行 2 的幂次方扩容。扩容最天才的地方在于，它不需要重新计算所有 Hash，只需要判断 hash &amp; oldCap 是否为 0，就能决定节点是留在原地还是平移 oldCap 个位置，极大地提高了数据迁移的效率。</p>
 <h4 id="转变规则"><a href="#转变规则" class="headerlink" title="转变规则"></a>转变规则</h4><p>数组的cap&lt;64 只扩容<br>链表节点数&gt;8 且数组&gt;&#x3D;64 链表-&gt;红黑树<br>单筒内扩容拆分后红黑树节点&lt;&#x3D;6 红黑树转变为链表  删除不数个数 而是根据节点的状态根节点没了或左子树或右子树没了等等转变</p>
+<h3 id="ConCurrentHashMap接口"><a href="#ConCurrentHashMap接口" class="headerlink" title="ConCurrentHashMap接口"></a>ConCurrentHashMap接口</h3><h4 id="put方法-1"><a href="#put方法-1" class="headerlink" title="put方法"></a>put方法</h4><p>对比hashmap </p>
+<ol>
+<li>加了一步正数化 因为concurrenthashmap中负数有特殊含义 -1表示正在扩容 -2表示是红黑树节点</li>
+<li>初始化table 的时候不像hashmap直接resize 而是通过cas找变量sizectrl 如果成功拿到就这个线程初始化 如果没拿到说明有别的线程在初始化 就自旋等待</li>
+<li>寻找桶位 也是(n-1)&amp;hash <ul>
+<li>如果是空的 就cas放入节点 cas失败就继续自旋重试</li>
+<li>如果发现正在扩容 这时候旧数组位置放的是个占位符节点 hash是-1 会先去协助扩容 在重新定位索引 放值</li>
+<li>如果有数据 且没在扩容 用synchronized锁住桶的头节点</li>
+</ul>
+</li>
+<li>桶内插入 和hashmap差不多了 也会树化</li>
+<li>统计大小 超过阈值 触发扩容</li>
+</ol>
 
   </div>
 </article>
@@ -185,7 +198,7 @@
     
     
       <div id="toc-footer" style="display: none">
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#java-%E9%9B%86%E5%90%88%E5%85%AB%E8%82%A1%E6%96%87"><span class="toc-number">1.</span> <span class="toc-text">java 集合八股文</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Collection%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.1.</span> <span class="toc-text">Collection接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Map%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.2.</span> <span class="toc-text">Map接口</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#put%E6%96%B9%E6%B3%95"><span class="toc-number">1.2.1.</span> <span class="toc-text">put方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BD%AC%E5%8F%98%E8%A7%84%E5%88%99"><span class="toc-number">1.2.2.</span> <span class="toc-text">转变规则</span></a></li></ol></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#java-%E9%9B%86%E5%90%88%E5%85%AB%E8%82%A1%E6%96%87"><span class="toc-number">1.</span> <span class="toc-text">java 集合八股文</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Collection%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.1.</span> <span class="toc-text">Collection接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Map%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.2.</span> <span class="toc-text">Map接口</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#put%E6%96%B9%E6%B3%95"><span class="toc-number">1.2.1.</span> <span class="toc-text">put方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BD%AC%E5%8F%98%E8%A7%84%E5%88%99"><span class="toc-number">1.2.2.</span> <span class="toc-text">转变规则</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ConCurrentHashMap%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.3.</span> <span class="toc-text">ConCurrentHashMap接口</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#put%E6%96%B9%E6%B3%95-1"><span class="toc-number">1.3.1.</span> <span class="toc-text">put方法</span></a></li></ol></li></ol></li></ol>
       </div>
     
 
